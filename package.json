@@ -4,7 +4,8 @@
   "description": "---\r #### _Three Stage Course Material Project - Restaurant Reviews_",
   "main": "index.js",
   "scripts": {
-    "start": "npx http-server -p 8000"
+    "start": "npx http-server -p 8000",
+    "repsonsive-img": "npx grunt responsive_images"
   },
   "repository": {
     "type": "git",
@@ -17,9 +18,17 @@
   },
   "homepage": "https://github.com/catsgotmytongue/mws-restaurant-project#readme",
   "dependencies": {
-    "http-server": "^0.11.1"
+    
   },
   "devDependencies": {
-    "gulp-responsive-images": "0.0.4"
+    "grunt": "^1.0.3",
+    "graphicsmagick": "0.0.1",
+    "grunt-contrib-clean": "^2.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-mkdir": "^1.0.0",
+    "grunt-responsive-images": "^1.10.1",
+    "gulp-responsive-images": "0.0.4",
+    "http-server": "^0.11.1",
+    "imagemagick": "^0.1.3"
   }
 }

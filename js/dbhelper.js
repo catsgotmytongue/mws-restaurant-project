@@ -149,8 +149,9 @@ class DBHelper {
   /**
    * Restaurant image URL.
    */
-  static imageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}`);
+  static imageUrlForRestaurant(restaurant, suffix = "") {
+    var photoSplit = restaurant.photograph.split('.');
+    return (`/img/${photoSplit[0]}${suffix ? '-'+suffix: ''}.${photoSplit[1]}`);
   }
 
   /**

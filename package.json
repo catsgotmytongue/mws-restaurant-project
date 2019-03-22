@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npx http-server -p 8000",
+    "scss": "node-sass --watch --recursive --output css --source-map true --source-map-contents --output-style expanded scss",
     "repsonsive-img": "npx grunt responsive_images"
   },
   "repository": {
@@ -17,7 +18,9 @@
     "url": "https://github.com/catsgotmytongue/mws-restaurant-project/issues"
   },
   "homepage": "https://github.com/catsgotmytongue/mws-restaurant-project#readme",
-  "dependencies": {},
+  "dependencies": {
+    "node-sass": "^4.11.0"
+  },
   "devDependencies": {
     "graphicsmagick": "0.0.1",
     "grunt": "^1.0.3",

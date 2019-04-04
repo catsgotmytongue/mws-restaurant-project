@@ -8,7 +8,6 @@
 
 @import "./colors";
 
-/* smallest screens first  max-width: 320px */
 body,
 td,
 th,
@@ -160,6 +159,7 @@ nav {
     font-weight: normal;
     line-height: 1;
     margin: 5px 20px;
+    padding-top: 10px;
   }
 
   select {
@@ -177,25 +177,27 @@ nav {
 
 /* ====================== Restaurant Listing ====================== */
 #restaurants-list {
+  margin-top: 10px;
   background-color: #f3f3f3;
   list-style: outside none none;
   /* margin: 0; */
   padding: 0;
+  padding-top: 10px;
   text-align: center;
-  display: flex;
-  flex-wrap: wrap;
-  /* width: calc(100% - 20px); */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-gap: 2px;
 
   li {
     background-color: #fff;
     border: 2px solid #ccc;
     font-family: Arial, sans-serif;
-    margin: 15px;
-    /*min-height: 380px;*/
-    /* padding: 0 30px 25px; */
-    /* text-align: center; */
-    /* width: 100%;*/
-    /* display:  flex; */
+    padding: 0 10px 5px;
+    display: flex;
+    flex-direction: column;
+    align-content: space-evenly;
+    justify-content: space-between;
+
     a {
       background-color: orange;
       border-bottom: 3px solid #eee;
@@ -208,15 +210,24 @@ nav {
       text-decoration: none;
       text-transform: uppercase;
     }
+
+    figure {
+      display: grid;
+      grid-template-columns: auto 1fr;
+    }
   }
 
   .restaurant-img {
     background-color: #ccc;
     display: block;
     margin: 0;
+    max-height: 9.5rem;
     /* max-width: 100%; */
-    min-height: 248px;
+    // min-height: 248px;
     /* min-width: 100%; */
+    @media screen and (max-width: 320px) {
+      display: none;
+    }
   }
 
   li h1 {
@@ -345,20 +356,20 @@ nav {
   }
 }
 
-@media screen and (min-width: 500px) {
-  #restaurants-list {
-    display: flex;
-  }
+// @media screen and (min-width: 500px) {
+//   #restaurants-list {
+//     display: flex;
+//   }
 
-  .filter-options {
-    display: flex;
-  }
+//   .filter-options {
+//     display: flex;
+//   }
 
-  .filter-options select {
-    width: calc(50% - 20px);
-  }
+//   .filter-options select {
+//     width: calc(50% - 20px);
+//   }
 
-  img {
-    max-width: 600px;
-  }
-}
+//   img {
+//     max-width: 600px;
+//   }
+// }

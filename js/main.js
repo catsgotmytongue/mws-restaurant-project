@@ -138,50 +138,48 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
-  const picture = document.createElement('picture');
+  const src1 = DBHelper.imageUrlForRestaurant(restaurant)+' 400w';
+  const src2 = DBHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
+  const src3 = DBHelper.imageUrlForRestaurant(restaurant, "1600")+' 1600w';
   
-  const source1 = document.createElement('source'); 
-  source1.srcset = DBHelper.imageUrlForRestaurant(restaurant);
-  source1.media = "(max-width: 300px)";
-  
-  const source2 = document.createElement('source');
-  source2.srcset = DBHelper.imageUrlForRestaurant(restaurant, "600");
-  source2.media = "(max-width: 500px)";
+  const liInner = `
+  <figure>
+    <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}">
+    <figcaption>
+      <h1>${restaurant.name}</h1>
+      <p>${restaurant.neighborhood}</p>
+      <p>${restaurant.address}</p>
+      
+    </figcaption>
+  </figure>
+  <a href="${DBHelper.urlForRestaurant(restaurant)}">View Details!</a>
+  `;
+  // const image = document.createElement('img');
+  // image.srcset = `${src1}, ${src2}, ${src3}`;
+  // image.className = 'restaurant-img';
+  // image.src = src1;
+  // image.sizes = "(max-width: 300px) 10vw,(max-width: 500px) 30vw, (min-width: 600px) 33vw";
 
-  const source3 = document.createElement('source');
-  source3.srcset = DBHelper.imageUrlForRestaurant(restaurant, "1600");
-  source3.media = "(min-width: 600px)";
+  // li.append(image);
 
-  //picture.append(source1);
-  //picture.append(source2);
-  //picture.append(source3);
+  // const name = document.createElement('h1');
+  // name.innerHTML = restaurant.name;
+  // li.append(name);
 
-  const image = document.createElement('img');
-  image.className = 'restaurant-img';
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  // const neighborhood = document.createElement('p');
+  // neighborhood.innerHTML = restaurant.neighborhood;
+  // li.append(neighborhood);
 
-  picture.append(image);
+  // const address = document.createElement('p');
+  // address.innerHTML = restaurant.address;
+  // li.append(address);
 
-  li.append(picture);
-
-  const name = document.createElement('h1');
-  name.innerHTML = restaurant.name;
-  li.append(name);
-
-  const neighborhood = document.createElement('p');
-  neighborhood.innerHTML = restaurant.neighborhood;
-  li.append(neighborhood);
-
-  const address = document.createElement('p');
-  address.innerHTML = restaurant.address;
-  li.append(address);
-
-  const more = document.createElement('a');
-  more.innerHTML = 'View Details';
-  more.href = DBHelper.urlForRestaurant(restaurant);
-  li.append(more)
-
-  return li
+  // const more = document.createElement('a');
+  // more.innerHTML = 'View Details';
+  // more.href = DBHelper.urlForRestaurant(restaurant);
+  // li.append(more)
+  li.innerHTML = liInner;
+  return li;
 }
 
 /**

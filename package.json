@@ -4,7 +4,7 @@
   "description": "---\r #### _Three Stage Course Material Project - Restaurant Reviews_",
   "main": "index.js",
   "scripts": {
-    "start": "npx http-server -p 8000",
+    "start": "npx http-server -p $PORT",
     "scss": "node-sass --watch --recursive --output css --source-map true --source-map-contents --output-style expanded scss",
     "repsonsive-img": "npx grunt responsive_images"
   },

@@ -1,8 +1,8 @@
 {
 	"version": 3,
-	"file": "styles.css",
+	"file": "restaurant-detail.css",
 	"sources": [
-		"../scss/styles.scss",
+		"../scss/restaurant-detail.scss",
 		"../scss/_colors.scss"
 	],
 	"sourcesContent": [

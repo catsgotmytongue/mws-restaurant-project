@@ -1,5 +1,5 @@
 
-const version = 15;
+const version = 16;
 const staticCacheName = 'restaurant-static-cache-v';
 const currentStaticCacheName = `${staticCacheName}${version}`;
 const allCaches = [

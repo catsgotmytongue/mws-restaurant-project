@@ -5,6 +5,8 @@
   box-sizing: border-box;
 }
 
+body { opacity: 50%;}
+
 body,
 td,
 th,

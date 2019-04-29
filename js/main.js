@@ -140,7 +140,7 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
-  const src1 = DBHelper.imageUrlForRestaurant(restaurant)+' 400w';
+  const src1 = DBHelper.imageUrlForRestaurant(restaurant, "600")+' 400w';
   const src2 = DBHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
   const src3 = DBHelper.imageUrlForRestaurant(restaurant, "1600")+' 1600w';
   

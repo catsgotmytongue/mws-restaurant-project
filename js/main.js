@@ -146,7 +146,7 @@ createRestaurantHTML = (restaurant) => {
   
   const liInner = `
   <figure>
-    <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}">
+    <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}" alttext="${restaurant.name}">
     <figcaption>
       <h1>${restaurant.name}</h1>
       <p>${restaurant.neighborhood}</p>
@@ -156,30 +156,6 @@ createRestaurantHTML = (restaurant) => {
   </figure>
   <a href="${DBHelper.urlForRestaurant(restaurant)}">View Details!</a>
   `;
-  // const image = document.createElement('img');
-  // image.srcset = `${src1}, ${src2}, ${src3}`;
-  // image.className = 'restaurant-img';
-  // image.src = src1;
-  // image.sizes = "(max-width: 300px) 10vw,(max-width: 500px) 30vw, (min-width: 600px) 33vw";
-
-  // li.append(image);
-
-  // const name = document.createElement('h1');
-  // name.innerHTML = restaurant.name;
-  // li.append(name);
-
-  // const neighborhood = document.createElement('p');
-  // neighborhood.innerHTML = restaurant.neighborhood;
-  // li.append(neighborhood);
-
-  // const address = document.createElement('p');
-  // address.innerHTML = restaurant.address;
-  // li.append(address);
-
-  // const more = document.createElement('a');
-  // more.innerHTML = 'View Details';
-  // more.href = DBHelper.urlForRestaurant(restaurant);
-  // li.append(more)
   li.innerHTML = liInner;
   return li;
 }

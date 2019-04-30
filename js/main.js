@@ -146,11 +146,11 @@ createRestaurantHTML = (restaurant) => {
   
   const liInner = `
   <figure>
-    <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}" alt="${restaurant.name} Restaurant">
+    <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}" alt="${restaurant.name} Restaurant" tabindex="0">
     <figcaption>
-      <h1>${restaurant.name}</h1>
-      <p>${restaurant.neighborhood}</p>
-      <p>${restaurant.address}</p>
+      <h1 tabindex="0">${restaurant.name}</h1>
+      <p tabindex="0">${restaurant.neighborhood}</p>
+      <p tabindex="0">${restaurant.address}</p>
       
     </figcaption>
   </figure>

@@ -1,5 +1,5 @@
 self.importScripts('./js/dbhelper.js');
-const version = 15;
+const version = 18;
 const cacheNamePrefix = 'restaurant-';
 const staticCacheName = `${cacheNamePrefix}static-cache-v`;
 const imgCacheName    = `${cacheNamePrefix}image-cache-v`;

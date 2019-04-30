@@ -327,9 +327,9 @@ nav {
 #reviews-container {
   // padding: 30px 40px 80px;
 
-  h2 {
+  h3 {
     color: #f58500;
-    font-size: 24pt;
+    font-size: 16pt;
     font-weight: 300;
     letter-spacing: -1px;
     padding-bottom: 1pt;
@@ -362,21 +362,3 @@ nav {
     }
   }
 }
-
-// @media screen and (min-width: 500px) {
-//   #restaurants-list {
-//     display: flex;
-//   }
-
-//   .filter-options {
-//     display: flex;
-//   }
-
-//   .filter-options select {
-//     width: calc(50% - 20px);
-//   }
-
-//   img {
-//     max-width: 600px;
-//   }
-// }

@@ -11,6 +11,10 @@ class DBHelper {
     return `/data/restaurants.json`;
   }
 
+  static get IMAGE_ROOT() {
+     return "/img/" 
+  };
+
   /**
    * Fetch all restaurants.
    */
@@ -150,7 +154,7 @@ class DBHelper {
    */
   static imageUrlForRestaurant(restaurant, suffix = "") {
     var photoSplit = restaurant.photograph.split('.');
-    return (`/img/${photoSplit[0]}${suffix ? '-'+suffix: ''}.${photoSplit[1]}`);
+    return (`${DBHelper.IMAGE_ROOT}${photoSplit[0]}${suffix ? '-'+suffix: ''}.${photoSplit[1]}`);
   }
 
   /**

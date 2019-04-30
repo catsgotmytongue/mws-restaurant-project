@@ -7,7 +7,7 @@
     "start": "npx http-server -p $PORT",
     "start:dev": "npx http-server -p 8080",
     "scss": "node-sass --watch --recursive --output css --source-map true --source-map-contents --output-style expanded scss",
-    "repsonsive-img": "npx grunt responsive_images"
+    "resp-img": "npx grunt responsive_images"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,7 @@
+.gitignore
+.git
+.dockerignore
+gruntfile.js
+README.md
+package.json
+package-lock.json

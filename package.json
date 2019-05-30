@@ -5,10 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "npx http-server -p $PORT",
-    "start:dev": "npx http-server -p 8080",
+    "start:dev": "docker run --rm -d -p 8000:8000 -v\"/d/dev/mobile-web-specialist/Projects/restaurants:/home/user/app:rw\" --name restaurants-server curtmullin/mws:restaurants-server-base",
+    "start:dev-api": "docker run -d --rm -p 8001:1337 curtmullin/mws:restaurants-api",
     "scss": "node-sass --watch --recursive --output css --source-map true --source-map-contents --output-style expanded scss",
     "resp-img": "npx grunt responsive_images",
     "deploy:prod":"git push heroku master"
+
   },
   "repository": {
     "type": "git",

@@ -1,13 +1,16 @@
-import PostsView from './views/Posts';
-import ToastsView from './views/Toasts';
-import idb from 'idb';
+
+import { idb } from 'idb';
 
 function openDatabase() {
+  console.log("Opening db");
+
   if (!navigator.serviceWorker) {
     return Promise.resolve();
   }
 
-  return ...;
+  return idb.openDB("restaurants", 1, upgradeDb => {
+    console.log("db: %o", upgradeDb);
+  });
 
 }
 
@@ -18,101 +21,50 @@ export default function IndexController(container) {
 }
 
 IndexController.prototype._registerServiceWorker = function() {
-  if (!navigator.serviceWorker) return;
-
-  var indexController = this;
-
-  navigator.serviceWorker.register('/sw.js').then(function(reg) {
-    if (!navigator.serviceWorker.controller) {
-      return;
-    }
-
-    if (reg.waiting) {
-      indexController._updateReady(reg.waiting);
-      return;
-    }
-
-    if (reg.installing) {
-      indexController._trackInstalling(reg.installing);
-      return;
-    }
-
-    reg.addEventListener('updatefound', function() {
-      indexController._trackInstalling(reg.installing);
+  if(navigator.serviceWorker) {
+    navigator.serviceWorker.register("./main-sw.js")
+    .then( swRegistration => {
+      console.log("Service worker registered: %o", swRegistration);
+  
+      if (!navigator.serviceWorker.controller) {
+        return;
+      }
+  
+      // activate a waiting service worker
+      if (swRegistration.waiting) {
+        activateServiceWorker(swRegistration.waiting);
+        return;
+      }
+  
+      // watch a service working that's installing and activate when its done
+      if (swRegistration.installing) {
+        waitForInstalledServiceWorker(swRegistration.installing);
+        return;
+      }
+  
+      // if an updated service worker is found, activate when it's installed
+      swRegistration.addEventListener('updatefound', () => 
+        waitForInstalledServiceWorker(swRegistration.installing)
+      );
+    })
+    .catch(err => {
+      console.log("Error registering service worker: %o", err);
     });
-  });
-
-  // Ensure refresh is only called once.
-  // This works around a bug in "force update on reload".
-  var refreshing;
-  navigator.serviceWorker.addEventListener('controllerchange', function() {
-    if (refreshing) return;
-    window.location.reload();
-    refreshing = true;
-  });
-};
-
-IndexController.prototype._trackInstalling = function(worker) {
-  var indexController = this;
-  worker.addEventListener('statechange', function() {
-    if (worker.state == 'installed') {
-      indexController._updateReady(worker);
+  
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    })
+  
+    function waitForInstalledServiceWorker(worker) {
+      worker.addEventListener('statechange', () => {
+        if (worker.state == 'installed') {
+          activateServiceWorker(worker);
+        }
+      });
     }
-  });
-};
-
-IndexController.prototype._updateReady = function(worker) {
-  var toast = this._toastsView.show("New version available", {
-    buttons: ['refresh', 'dismiss']
-  });
-
-  toast.answer.then(function(answer) {
-    if (answer != 'refresh') return;
-    worker.postMessage({action: 'skipWaiting'});
-  });
-};
-
-// open a connection to the server for live updates
-IndexController.prototype._openSocket = function() {
-  var indexController = this;
-  var latestPostDate = this._postsView.getLatestPostDate();
-
-  // create a url pointing to /updates with the ws protocol
-  var socketUrl = new URL('/updates', window.location);
-  socketUrl.protocol = 'ws';
-
-  if (latestPostDate) {
-    socketUrl.search = 'since=' + latestPostDate.valueOf();
+  
+    function activateServiceWorker(worker) {
+      worker.postMessage({action: 'skipWaiting'});
+    }
   }
-
-  // this is a little hack for the settings page's tests,
-  // it isn't needed for Wittr
-  socketUrl.search += '&' + location.search.slice(1);
-
-  var ws = new WebSocket(socketUrl.href);
-
-  // add listeners
-  ws.addEventListener('open', function() {
-    if (indexController._lostConnectionToast) {
-      indexController._lostConnectionToast.hide();
-    }
-  });
-
-  ws.addEventListener('message', function(event) {
-    requestAnimationFrame(function() {
-      indexController._onSocketMessage(event.data);
-    });
-  });
-
-  ws.addEventListener('close', function() {
-    // tell the user
-    if (!indexController._lostConnectionToast) {
-      indexController._lostConnectionToast = indexController._toastsView.show("Unable to connect. Retrying…");
-    }
-
-    // try and reconnect in 5 seconds
-    setTimeout(function() {
-      indexController._openSocket();
-    }, 5000);
-  });
 };

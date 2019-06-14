@@ -1,5 +1,5 @@
 self.importScripts('./js/dbhelper.js');
-const version = 18;
+const version = 20;
 const cacheNamePrefix = 'restaurant-';
 const staticCacheName = `${cacheNamePrefix}static-cache-v`;
 const imgCacheName    = `${cacheNamePrefix}image-cache-v`;
@@ -15,16 +15,14 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(currentStaticCacheName)
     .then(cache => cache.addAll([
-      '/',
-      `/css/restaurant-detail.css?v=${version}`,
-      `/css/restaurant-list.css?v=${version}`,
+      `/css/restaurant-detail.css`,
+      `/css/restaurant-list.css`,
       '/favicon.ico',
-      `/index.html?v=${version}`,
-      `/restaurant.html?v=${version}`,
-      DBHelper.DATABASE_URL,
-      `/js/main.js?v=${version}`,
-      `/js/dbhelper.js?v=${version}`,
-      `/js/restaurant_info.js?v=${version}`
+      `/index.html`,
+      `/restaurant.html`,
+      `/js/main.js`,
+      `/js/dbhelper.js`,
+      `/js/restaurant_info.js`
     ]))
     .catch(err=> console.log('Error when adding cached items %o', err))
   )

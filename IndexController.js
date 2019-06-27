@@ -1,4 +1,6 @@
 
+console.log('INDEXCONTROLLER!');
+
 import { idb } from 'idb';
 
 function openDatabase() {

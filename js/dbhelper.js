@@ -1,7 +1,9 @@
+import { openDB } from "idb";
+
 /**
  * Common database helper functions.
  */
-export class DBHelper {
+export default class DBHelper {
 
   /**
    * Database URL.
@@ -18,7 +20,7 @@ export class DBHelper {
   /**
    * Fetch all restaurants.
    */
-  static fetchRestaurants() {
+  static  fetchRestaurants() {
     return fetch(DBHelper.DATABASE_URL)
     .then( res => res.json() )
     .catch(err => console.log("Error in fetchRestaurants(): %o", err));
@@ -27,7 +29,7 @@ export class DBHelper {
   /**
    * Fetch a restaurant by its ID.
    */
-  static fetchRestaurantById(id) {
+  static  fetchRestaurantById(id) {
     // fetch all restaurants with proper error handling.
     return DBHelper.fetchRestaurants()
     .then(restaurants => restaurants.find(r => r.id == id))
@@ -37,7 +39,7 @@ export class DBHelper {
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
    */
-  static fetchRestaurantByCuisine(cuisine) {
+  static  fetchRestaurantByCuisine(cuisine) {
     // Fetch all restaurants  with proper error handling
     return DBHelper.fetchRestaurants()
     .then(restaurants => restaurants.filter(r => r.cuisine_type == cuisine))
@@ -47,7 +49,7 @@ export class DBHelper {
   /**
    * Fetch restaurants by a neighborhood with proper error handling.
    */
-  static fetchRestaurantByNeighborhood(neighborhood) {
+  static  fetchRestaurantByNeighborhood(neighborhood) {
     // Fetch all restaurants
     return DBHelper.fetchRestaurants()
     .then(restaurants => restaurants.filter(r => r.neighborhood == neighborhood))
@@ -57,7 +59,7 @@ export class DBHelper {
   /**
    * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
    */
-  static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood) {
+  static  fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood) {
     return DBHelper.fetchRestaurants()
     .then(restaurants => {
         let results = restaurants;
@@ -76,7 +78,7 @@ export class DBHelper {
   /**
    * Fetch all neighborhoods with proper error handling.
    */
-  static fetchNeighborhoods() {
+  static  fetchNeighborhoods() {
     return DBHelper.fetchRestaurants()
     .then(restaurants => {
       return restaurants.map((v, i) => restaurants[i].neighborhood)
@@ -88,7 +90,7 @@ export class DBHelper {
   /**
    * Fetch all cuisines with proper error handling.
    */
-  static fetchCuisines() {
+  static  fetchCuisines() {
     return DBHelper.fetchRestaurants()
     .then(restaurants => restaurants
                           .map((v, i) => restaurants[i].cuisine_type)
@@ -99,14 +101,14 @@ export class DBHelper {
   /**
    * Restaurant page URL.
    */
-  static urlForRestaurant(restaurant) {
+  static  urlForRestaurant(restaurant) {
     return (`./restaurant.html?id=${restaurant.id}`);
   }
 
   /**
    * Restaurant image URL.
    */
-  static imageUrlForRestaurant(restaurant, suffix = "") {
+  static  imageUrlForRestaurant(restaurant, suffix = "") {
     var photoSplit = restaurant.photograph.includes('.') ? restaurant.photograph.split('.') : [restaurant.photograph, 'jpg'];
     return (`${DBHelper.IMAGE_ROOT}${photoSplit[0]}${suffix ? '-'+suffix: ''}.${photoSplit[1]}`);
   }
@@ -114,7 +116,7 @@ export class DBHelper {
   /**
    * Map marker for a restaurant.
    */
-  static mapMarkerForRestaurant(restaurant, map) {
+  static  mapMarkerForRestaurant(restaurant, map) {
     const marker = new google.maps.Marker({
       position: restaurant.latlng,
       title: restaurant.name,

@@ -1,4 +1,4 @@
-import { DBHelper } from './dbhelper.js';
+import DBHelper from './dbhelper.js';
 
 let restaurants,
   neighborhoods,

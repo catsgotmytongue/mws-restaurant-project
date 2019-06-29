@@ -1,24 +1,37 @@
+import {openDB} from 'idb';
+import {updateRestaurants} from '../js/main.js';
 
-import { idb } from 'idb';
+export function IndexController(container) {
+  this._container = container;
+  this._initMap = initMap;
+  this._dbPromise = openDatabase();
+  this._registerServiceWorker();
+}
 
-function openDatabase() {
+IndexController.prototype.initMap = function() {
+  let loc = {
+    lat: 40.722216,
+    lng: -73.987501
+  };
+  self.map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 12,
+    center: loc,
+    scrollwheel: false
+  });
+  updateRestaurants();
+};
+
+IndexController.prototype.openDatabase = function() {
   console.log("Opening db");
 
   if (!navigator.serviceWorker) {
     return Promise.resolve();
   }
 
-  return idb.openDB("restaurants", 1, upgradeDb => {
+  return openDB("restaurants", 1, upgradeDb => {
     console.log("db: %o", upgradeDb);
   });
-
-}
-
-export default function IndexController(container) {
-  this._container = container;
-  this._dbPromise = openDatabase();
-  this._registerServiceWorker();
-}
+};
 
 IndexController.prototype._registerServiceWorker = function() {
   if(navigator.serviceWorker) {

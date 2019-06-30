@@ -1,4 +1,7 @@
-const version = 20;
+import {openDB} from 'idb';
+import {DBHelper} from '../dbhelper.js';
+
+const version = 49;
 const cacheNamePrefix = 'restaurant-';
 const staticCacheName = `${cacheNamePrefix}static-cache-v`;
 const imgCacheName    = `${cacheNamePrefix}image-cache-v`;
@@ -8,6 +11,21 @@ const currentCaches = [
   currentStaticCacheName,
   currentImgCacheName
 ];
+console.log('DBHELPER %o', DBHelper);
+const dbPromise = 
+openDB(DBHelper.DbName, DBHelper.DbVersion, {
+  upgrade(db, oldVersion, newVersion, transaction) {
+    console.log(`OpenDB: upgrade... ${{db, oldVersion, newVersion, transaction}}`);
+    
+
+  },
+  blocked() {
+    console.log(`OpenDB: blocked...`);
+  },
+  blocking() {
+    console.log(`OpenDB: blocking...`);
+  }
+});
 
 // install is called when service worker is actually installed
 self.addEventListener('install', event => {
@@ -19,9 +37,9 @@ self.addEventListener('install', event => {
       '/favicon.ico',
       `/index.html`,
       `/restaurant.html`,
-      `/js/main.js`,
-      `/js/dbhelper.js`,
-      `/js/restaurant_info.js`
+      `/main.js`,
+      `/dbhelper.js`,
+      `/restaurant_info.js`
     ]))
     .catch(err=> console.log('Error when adding cached items %o', err))
   )
@@ -65,6 +83,10 @@ self.addEventListener('fetch', event => {
       return;
     }
 
+    if(requestUrl.host == DBHelper.ApiUrl)
+    {
+      console.log("API Call %o", requestUrl.href);
+    }
     // same origin .css or .js updates
     // if(requestUrl.pathname.endsWith('.css') || requestUrl.pathname.endsWith('.js')) {
     //   event.respondWith( serveAsset(event.request) );

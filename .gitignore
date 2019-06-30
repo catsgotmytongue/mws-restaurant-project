@@ -85,3 +85,5 @@ typings/
 
 #ignore generated responsive images
 img/
+
+dist/

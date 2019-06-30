@@ -3,8 +3,7 @@ import {updateRestaurants} from '../js/main.js';
 
 export function IndexController(container) {
   this._container = container;
-  this._initMap = initMap;
-  this._dbPromise = openDatabase();
+  this._dbPromise = this.openDatabase();
   this._registerServiceWorker();
 }
 
@@ -21,16 +20,33 @@ IndexController.prototype.initMap = function() {
   updateRestaurants();
 };
 
+IndexController.prototype.updateRestaurants = function() {
+  updateRestaurants();
+}
+
 IndexController.prototype.openDatabase = function() {
   console.log("Opening db");
-
+  debugger;
   if (!navigator.serviceWorker) {
     return Promise.resolve();
   }
 
-  return openDB("restaurants", 1, upgradeDb => {
-    console.log("db: %o", upgradeDb);
-  });
+  return openDB("restaurants", 5, 
+  {
+    upgrade(db, oldVersion, newVersion, transaction) {
+      console.log("db: %o", db);
+    //create an object store
+    var keyValStore = db.createObjectStore('restaurants');
+    keyValStore.put('testval', 'testkey');  
+    },
+    blocked() {
+      // …
+    },
+    blocking() {
+      // …
+    }
+  } 
+    );
 };
 
 IndexController.prototype._registerServiceWorker = function() {

@@ -1,4 +1,3 @@
-self.importScripts('./js/dbhelper.js');
 const version = 20;
 const cacheNamePrefix = 'restaurant-';
 const staticCacheName = `${cacheNamePrefix}static-cache-v`;

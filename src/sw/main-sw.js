@@ -25,6 +25,7 @@ self.addEventListener('install', event => {
       `/css/restaurant-detail.css`,
       `/css/restaurant-list.css`,
       '/favicon.ico',
+      '/manifest.json',
       `/index.html`,
       `/restaurant.html`,
       `/main.js`,

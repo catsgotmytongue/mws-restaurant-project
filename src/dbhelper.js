@@ -48,10 +48,12 @@ export class DBHelper {
     })
     .then( restaurants => {
       console.log('[] from db: %o', restaurants);
-      return restaurants || fetch(DBHelper.ApiUrl).then( res => res.json());
+      if(restaurants && restaurants.length > 0)
+        return restaurants;
+
+      return fetch(DBHelper.ApiUrl).then(res=> res.json()).then(json => json);
+      // return restaurants || fetch(DBHelper.ApiUrl).then(res=> res.json()).then(json => json);
     })
-    // return fetch(DBHelper.ApiUrl)
-    // .then( res => res.json())
     .catch(err => console.log("Error in fetchRestaurants(): %o", err));
   }
   

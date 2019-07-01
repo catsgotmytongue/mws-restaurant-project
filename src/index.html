@@ -1,3 +1,4 @@
+<!DOCTYPE html> 
 <html lang="en">
 
   <head>
@@ -8,6 +9,7 @@
 
     <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css">
     <link rel="stylesheet" href="css/restaurant-list.css">
+    <link rel="manifest" href="/manifest.json">
     <title>Restaurant Reviews</title>
   </head>
 
@@ -28,12 +30,14 @@
       <section>
         <div class="filter-options">
           <h2>Filter Results</h2>
+          <label for="neighborhoods">Choose Your Neighborhood</label>
           <select
             id="neighborhoods-select"
             name="neighborhoods"
             onchange="updateRestaurants()">
             <option value="all">All Neighborhoods</option>
           </select>
+          <label for="cuisines">Choose Cuisine</label>
           <select
             id="cuisines-select"
             name="cuisines"

@@ -34,6 +34,7 @@ module.exports = {
                 {from: 'css/*.css', to: 'css/[name].[ext]'},
                 {from: 'assets/img/*', to: 'img/[name].[ext]'},
                 {from: 'assets/favicon.ico', to: 'favicon.ico'},
+                {from: 'assets/manifest.json', to: 'manifest.json'},
             ])
     ]
 };

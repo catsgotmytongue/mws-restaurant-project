@@ -15,7 +15,7 @@
   "scripts": {
     "build": "babel js -d ES5",
     "build:docker": "docker build -t curtmullin/mws:latest .",
-    "start": "npx http-server dist -p $PORT",
+    "start": "cross-var \"npx http-server dist -p $npm_package_config_serverPort\"",
     "dev": "concurrently \"npm run dev:start:server\" \"npm run dev:start:api\"",
     "dev:stop:server": "cross-var \"docker stop $npm_package_config_serverName\"",
     "dev:stop:api": "cross-var \"docker stop $npm_package_config_apiName\"",

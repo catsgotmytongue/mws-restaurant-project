@@ -8,13 +8,14 @@
     "serverPort": 8000,
     "serverImage": "curtmullin/mws:restaurants-server-base",
     "serverName": "restaurants-server",
-    "apiPort": 8001,
+    "apiPort": 1337,
     "apiImage": "curtmullin/mws:restaurants-api",
     "apiName": "restaurants-api"
   },
   "scripts": {
     "build": "babel js -d ES5",
-    "start": "npx http-server -p $PORT",
+    "build:docker": "docker build -t curtmullin/mws:latest .",
+    "start": "npx http-server dist -p 8000",
     "dev": "concurrently \"npm run dev:start:server\" \"npm run dev:start:api\"",
     "dev:stop:server": "cross-var \"docker stop $npm_package_config_serverName\"",
     "dev:stop:api": "cross-var \"docker stop $npm_package_config_apiName\"",

@@ -31,7 +31,7 @@ export class DBHelper {
    * Url of the api server
    */
   static get ApiUrl() {
-    return `http://localhost:8001/restaurants`;
+    return `http://localhost:1337/restaurants`;
   }
   
   static get IMAGE_ROOT() {

@@ -5,7 +5,7 @@ var map;
 /**
  * Initialize Google map, called from HTML.
  */
-window.initMap = () => {
+window.initMap = function() {
   fetchRestaurantFromURL()
   .then( restaurant => {
     self.map = new google.maps.Map(document.getElementById('map'), {

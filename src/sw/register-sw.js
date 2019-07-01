@@ -47,4 +47,4 @@ var registerServiceWorker = function(serviceWorkerFile) {
   }
 };
 
-registerServiceWorker("./dist/sw.js");
+registerServiceWorker("./sw.js");

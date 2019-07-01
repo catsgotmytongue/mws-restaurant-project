@@ -1,7 +1,9 @@
-import {openDB} from 'idb';
 import {DBHelper} from '../dbhelper.js';
 
-const version = 49;
+const version = 79;
+
+const apiUrl = new URL(DBHelper.ApiUrl);
+
 const cacheNamePrefix = 'restaurant-';
 const staticCacheName = `${cacheNamePrefix}static-cache-v`;
 const imgCacheName    = `${cacheNamePrefix}image-cache-v`;
@@ -11,21 +13,9 @@ const currentCaches = [
   currentStaticCacheName,
   currentImgCacheName
 ];
-console.log('DBHELPER %o', DBHelper);
-const dbPromise = 
-openDB(DBHelper.DbName, DBHelper.DbVersion, {
-  upgrade(db, oldVersion, newVersion, transaction) {
-    console.log(`OpenDB: upgrade... ${{db, oldVersion, newVersion, transaction}}`);
-    
 
-  },
-  blocked() {
-    console.log(`OpenDB: blocked...`);
-  },
-  blocking() {
-    console.log(`OpenDB: blocking...`);
-  }
-});
+//console.log('DBHELPER %o', DBHelper);
+console.log(`Running sw.js version ${version}`);
 
 // install is called when service worker is actually installed
 self.addEventListener('install', event => {
@@ -39,7 +29,8 @@ self.addEventListener('install', event => {
       `/restaurant.html`,
       `/main.js`,
       `/dbhelper.js`,
-      `/restaurant_info.js`
+      `/restaurant_info.js`,
+      '/register_sw.js',
     ]))
     .catch(err=> console.log('Error when adding cached items %o', err))
   )
@@ -67,11 +58,17 @@ self.addEventListener('activate', event => {
 
 // listen for requests
 self.addEventListener('fetch', event => {
+  //console.log("REQ: %o", event.request);
   
   var requestUrl = new URL(event.request.url);
 
   // make sure to handle only our origin's requests
   if (requestUrl.origin === location.origin) {
+    // handle root, when offline
+    if(requestUrl.pathname === '/') {
+      event.respondWith( caches.match('/index.html') );
+    }
+
     // handle image requests
     if(requestUrl.pathname.startsWith(DBHelper.IMAGE_ROOT)) {
       event.respondWith( serveImage(event.request) );
@@ -83,10 +80,7 @@ self.addEventListener('fetch', event => {
       return;
     }
 
-    if(requestUrl.host == DBHelper.ApiUrl)
-    {
-      console.log("API Call %o", requestUrl.href);
-    }
+    
     // same origin .css or .js updates
     // if(requestUrl.pathname.endsWith('.css') || requestUrl.pathname.endsWith('.js')) {
     //   event.respondWith( serveAsset(event.request) );
@@ -98,8 +92,35 @@ self.addEventListener('fetch', event => {
       caches.match(event.request)
       .then(response => response || fetch(event.request) )
       .catch(reason => console.log("Cache miss: ",reason)) );
+      return;
+  }
+
+  if(requestUrl.origin == apiUrl.origin)
+  {
+    console.log("API Call %o, %o", requestUrl.href, apiUrl.href);
+    if(requestUrl.href === apiUrl.href) {
+      event.respondWith(
+        fetch(event.request)
+        .then(res => {
+          const clonedRes = res.clone();
+          clonedRes.json().then( restaurants => {
+            DBHelper.putRestaurants(restaurants)
+          })
+          return res;
+        }) 
+      );
+    }
+
     return;
   }
+
+  //console.log("Outside Origin: %o", requestUrl);
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request) )
+      .catch(reason => console.log("Cache miss: ",reason)) 
+  );
+  return;
 });
 
 // listen for service worker messages

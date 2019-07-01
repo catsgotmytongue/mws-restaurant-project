@@ -8,7 +8,7 @@ var markers = []
 /**
  * Initialize Google map, called from HTML.
  */
-window.initMap = () => {
+window.initMap = function() {
    let loc = {
      lat: 40.722216,
      lng: -73.987501

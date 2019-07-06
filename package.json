@@ -21,7 +21,7 @@
     "dev:stop:api": "cross-var \"docker stop $npm_package_config_apiName\"",
     "dev:start:server": "cross-var \"docker run --rm -d -p $npm_package_config_serverPort:8000 --name $npm_package_config_serverName -v\"$npm_package_config_serverDir:/home/user/app:rw\" $npm_package_config_serverImage \"",
     "dev:start:api": "cross-var \"docker run --rm -d -p $npm_package_config_apiPort:1337 --name $npm_package_config_apiName $npm_package_config_apiImage\"",
-    "scss": "node-sass --watch --recursive --output css --source-map true --source-map-contents --output-style expanded scss",
+    "sass:watch": "node-sass --watch --recursive --output src/css --source-map true --source-map-contents --output-style expanded src/sass",
     "resp-img": "npx grunt responsive_images",
     "deploy:prod": "git push heroku master"
   },

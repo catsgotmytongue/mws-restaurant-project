@@ -1,5 +1,5 @@
 {
-  "name": "mws-restaurant-stage-2",
+  "name": "mws-restaurant-stage-3",
   "version": "1.0.0",
   "description": "---\r #### _Restaurant Reviews_",
   "main": "index.js",
@@ -9,7 +9,7 @@
     "serverImage": "curtmullin/mws:restaurants-server-base",
     "serverName": "restaurants-server",
     "apiPort": 1337,
-    "apiImage": "curtmullin/mws:restaurants-api",
+    "apiImage": "curtmullin/mws:restaurants-api-stage-3",
     "apiName": "restaurants-api"
   },
   "scripts": {

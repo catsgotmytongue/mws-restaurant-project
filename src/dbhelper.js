@@ -56,9 +56,15 @@ export class DBHelper {
     })
     .catch(err => console.log("Error in fetchRestaurants(): %o", err));
   }
+  /*
+   * Fetch favorite restaurants - /restaurants/?is_favorite=true
+   */
+  static fetchFavoriteRestaurants() {
+    
+  }
   
   /**
-   * Fetch a restaurant by its ID.
+   * Fetch a restaurant by its ID. - /restaurants/<restaurant_id>
    */
   static fetchRestaurantById(id) {
     return dbPromise.then(db => {
@@ -71,9 +77,71 @@ export class DBHelper {
     })
     .catch( err=> console.log('Restaurant does not exist') );
   }
+
+  
+  /*
+   * Fetch all restaurant reviews - /reviews
+   */
+  static fetchAllRestaurantReviews() {
+    
+  }
   
   /**
+   * Fetch restaurant reviews by Restaurant ID - /reviews/?restaurant_id=<restaurant_id>
+   * @param {number} restaurantId
+   */
+  static fetchRestaurantReviewsByRestaurant(restaurantId) {
+    
+  }
+  
+  /**
+   * Fetch restaurant reviews by review ID - /reviews/<review_id>
+   * @param {number} reviewId
+   */
+  static fetchRestaurantReviewById(reviewId) {
+    
+  }
+
+  /**
+   * POST a restaurant review - /reviews
+   * @param {{restaurant_id: number, name: string, rating: number, comments: string}} review
+   */
+  static postRestaurantReview(review) {
+    
+  }
+
+  /**
+   * Favorite or Unfavorite a restaurant
+   * /restaurants/<restaurant_id>/?is_favorite=true
+   * @param {number} restaurantId 
+   * @param {boolean} isFavorite
+   */
+  static favoriteRestaurant(restaurantId, isFavorite){
+    
+  }
+
+  /**
+   * Update a restaurant review 
+   * /reviews/<review_id>
+   * @param {number} reviewId 
+   * @param {{name: string, rating: number, comments: string}} review 
+   */
+  static updateRestaurantReview(reviewId, review) {
+
+  }
+
+  /**
+   * Delete a restaurant review 
+   * /reviews/<review_id>
+   * @param {number} reviewId
+   * */
+  static deleteRestaurantReview(reviewId) {
+
+  }
+    
+  /**
    * Fetch restaurants by a cuisine type with proper error handling.
+   * @param {string} cuisine
    */
   static fetchRestaurantByCuisine(cuisine) {
     // Fetch all restaurants  with proper error handling
@@ -84,6 +152,7 @@ export class DBHelper {
   
   /**
    * Fetch restaurants by a neighborhood with proper error handling.
+   * @param {string} neighborhood
    */
   static fetchRestaurantByNeighborhood(neighborhood) {
     // Fetch all restaurants
@@ -94,6 +163,8 @@ export class DBHelper {
   
   /**
    * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
+   * @param {string} cuisine
+   * @param {string} neighborhood
    */
   static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood) {
     return DBHelper.fetchRestaurants()
@@ -164,7 +235,7 @@ export class DBHelper {
     }
       
     static putRestaurants(restaurants) {
-      console.log("Put to indexedDB: %o", restaurants);
+      //console.log("Put to indexedDB: %o", restaurants);
       for( var key in restaurants) {
         const restaurant = restaurants[key];
         //console.log("restaurant: %o", restaurant);

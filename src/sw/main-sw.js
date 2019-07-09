@@ -1,6 +1,6 @@
 import {DBHelper} from '../dbhelper.js';
 
-const version = 79;
+const version = 81;
 
 const apiUrl = new URL(DBHelper.ApiUrl);
 
@@ -22,15 +22,15 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(currentStaticCacheName)
     .then(cache => cache.addAll([
-      `/css/restaurant-detail.css`,
-      `/css/restaurant-list.css`,
+      `/css/restaurant_detail.css`,
+      `/css/restaurant_list.css`,
       '/favicon.ico',
       '/manifest.json',
       `/index.html`,
       `/restaurant.html`,
-      `/main.js`,
+      `/restaurant_list.js`,
       `/dbhelper.js`,
-      `/restaurant_info.js`,
+      `/restaurant_detail.js`,
       '/register_sw.js',
     ]))
     .catch(err=> console.log('Error when adding cached items %o', err))

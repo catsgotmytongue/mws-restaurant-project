@@ -1,4 +1,6 @@
-import { DBHelper } from './dbhelper.js';
+import "./sass/restaurant-list.scss";
+
+import { DBHelper } from './dbhelper';
 
 let restaurants,
   neighborhoods,

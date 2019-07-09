@@ -2,12 +2,13 @@ const path = require("path");
 const cleanWebPackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin'); 
 const CopyPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
     mode: 'development',
     entry: {
-        main: './src/main.js',
-        restaurant_info: './src/restaurant_info.js',
+        restaurant_list: './src/main.js',
+        restaurant_detail: './src/restaurant_info.js',
         dbhelper: './src/dbhelper.js',
         register_sw: './src/sw/register-sw.js',
         sw: './src/sw/main-sw.js'
@@ -17,19 +18,37 @@ module.exports = {
       },
     output: {
         filename: '[name].js',
-        path: path.resolve(__dirname, 'dist')
+        path: path.resolve(__dirname, 'dist'),
+        
     },
     module: {
         rules: [
             {
-                test: /\.css$/,
-                use: ['style-loader', 'css-loader']
+                test: /\.s?css$/,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    'css-loader',
+                    'sass-loader'
+                ]
             }
         ]
     },
     plugins: [
         new cleanWebPackPlugin.CleanWebpackPlugin(),
-        new CopyPlugin([
+        new HtmlWebpackPlugin({
+            title: 'Restaurant Reviews 3',
+            template: './src/index.html',
+            inject: false,
+            minify: {
+                removeComments: true,
+                collapseWhitespace: false
+            }
+        }),        
+        new MiniCssExtractPlugin({
+            filename: "css/[name].css",
+            chunkFilename: "[id].css"
+        }),
+        new CopyPlugin([              
                 {from: 'src/*.html', to: '[name].[ext]'},
                 {from: 'css/*.css', to: 'css/[name].[ext]'},
                 {from: 'assets/img/*', to: 'img/[name].[ext]'},

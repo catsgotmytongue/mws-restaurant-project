@@ -1,3 +1,4 @@
+import "./sass/restaurant-detail.scss";
 import {DBHelper} from './dbhelper';
 let restaurant;
 var map;

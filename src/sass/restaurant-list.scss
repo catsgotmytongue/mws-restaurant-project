@@ -8,6 +8,8 @@
 
 @import "./colors";
 
+$buttonBgColor: #155889;
+$buttonFgColor: #fff;
 body,
 td,
 th,
@@ -209,9 +211,9 @@ nav {
     justify-content: space-between;
 
     a {
-      background-color: orange;
+      background-color: $buttonBgColor;
       border-bottom: 3px solid #eee;
-      color: #292929;
+      color: $buttonFgColor;
       display: inline-block;
       font-size: 10pt;
       margin: 15px 0 0;

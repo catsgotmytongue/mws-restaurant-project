@@ -51,9 +51,9 @@ module.exports = {
         new CopyPlugin([              
                 {from: 'src/*.html', to: '[name].[ext]'},
                 {from: 'css/*.css', to: 'css/[name].[ext]'},
-                {from: 'assets/img/*', to: 'img/[name].[ext]'},
-                {from: 'assets/favicon.ico', to: 'favicon.ico'},
-                {from: 'assets/manifest.json', to: 'manifest.json'},
+                {from: 'src/assets/img/*', to: 'img/[name].[ext]'},
+                {from: 'src/assets/favicon.ico', to: 'favicon.ico'},
+                {from: 'src/assets/manifest.json', to: 'manifest.json'},
             ])
     ]
 };

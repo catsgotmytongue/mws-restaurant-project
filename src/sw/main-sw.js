@@ -1,6 +1,6 @@
 import {DBHelper} from '../dbhelper.js';
 
-const version = 81;
+const version = 82;
 
 const apiUrl = new URL(DBHelper.ApiUrl);
 

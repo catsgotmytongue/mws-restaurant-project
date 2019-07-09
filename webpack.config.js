@@ -8,7 +8,7 @@ module.exports = {
     mode: 'development',
     entry: {
         restaurant_list: './src/main.js',
-        restaurant_detail: './src/restaurant_info.js',
+        restaurant_detail: './src/restaurant_detail.js',
         dbhelper: './src/dbhelper.js',
         register_sw: './src/sw/register-sw.js',
         sw: './src/sw/main-sw.js'

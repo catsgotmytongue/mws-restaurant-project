@@ -7,6 +7,7 @@
 }
 
 @import "./colors";
+@import "./common";
 
 body,
 td,
@@ -20,7 +21,6 @@ p {
 
 body {
   background-color: #fdfdfd;
-  margin: -9001;
   position: relative;
 }
 
@@ -382,4 +382,8 @@ nav {
       }
     }
   }
+}
+
+.rating {
+  color: #826901;
 }

@@ -7,6 +7,7 @@
 }
 
 @import "./colors";
+@import "./common";
 
 $buttonBgColor: #155889;
 $buttonFgColor: #fff;
@@ -225,7 +226,11 @@ nav {
 
     figure {
       display: grid;
-      grid-template-columns: auto 1fr;
+      grid-template-columns: auto 1fr 30px;
+
+      figcaption {
+        grid-column: 2/-1;
+      }
     }
   }
 
@@ -387,3 +392,9 @@ nav {
 //     max-width: 600px;
 //   }
 // }
+
+.favorite-icon {
+  grid-row: 1;
+  grid-column: -2;
+  font-size: 20px;
+}

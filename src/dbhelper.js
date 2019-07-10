@@ -31,7 +31,7 @@ export class DBHelper {
    * Url of the api server
    */
   static get ApiUrl() {
-    return `http://localhost:1337/restaurants`;
+    return `http://localhost:1337`;
   }
   
   static get IMAGE_ROOT() {
@@ -51,7 +51,7 @@ export class DBHelper {
       if(restaurants && restaurants.length > 0)
         return restaurants;
 
-      return fetch(DBHelper.ApiUrl).then(res=> res.json()).then(json => json);
+      return fetch(`${DBHelper.ApiUrl}/restaurants`).then(res=> res.json());
       // return restaurants || fetch(DBHelper.ApiUrl).then(res=> res.json()).then(json => json);
     })
     .catch(err => console.log("Error in fetchRestaurants(): %o", err));
@@ -67,13 +67,14 @@ export class DBHelper {
    * Fetch a restaurant by its ID. - /restaurants/<restaurant_id>
    */
   static fetchRestaurantById(id) {
+    console.log(`fetch restaurants by id ${id}`);
     return dbPromise.then(db => {
       var store = db.transaction(dbName, 'readonly').objectStore(dbName);
       return store.get(parseInt(id));
     })
     .then( restaurant => {
-      console.log('{} from db: %o', restaurant);
-      return restaurant || fetch(`${DBHelper.ApiUrl}/${id}`).then( res => res.json());
+      console.log(`{} from db: ${restaurant}, calling ${DBHelper.ApiUrl}/restaurants/${id} to fetch `);
+      return restaurant || fetch(`${DBHelper.ApiUrl}/restaurants/${id}`).then( res => res.json());
     })
     .catch( err=> console.log('Restaurant does not exist') );
   }
@@ -83,7 +84,8 @@ export class DBHelper {
    * Fetch all restaurant reviews - /reviews
    */
   static fetchAllRestaurantReviews() {
-    
+    return fetch(`${DBHelper.ApiUrl}/reviews`).then(res => res.json())
+    .catch(err=>console.log(err));
   }
   
   /**
@@ -91,7 +93,8 @@ export class DBHelper {
    * @param {number} restaurantId
    */
   static fetchRestaurantReviewsByRestaurant(restaurantId) {
-    
+    return fetch(`${DBHelper.ApiUrl}/reviews/?restaurant_id=${restaurantId}`).then(res => res.json())
+    .catch(err=>console.log(err));
   }
   
   /**
@@ -216,6 +219,8 @@ export class DBHelper {
      * Restaurant image URL.
      */
     static imageUrlForRestaurant(restaurant, suffix = "") {
+      if(!restaurant || !restaurant.photograph)
+        return "https://placehold.it/300";
       var photoSplit = restaurant.photograph.includes('.') ? restaurant.photograph.split('.') : [restaurant.photograph, 'jpg'];
       return (`${DBHelper.IMAGE_ROOT}${photoSplit[0]}${suffix ? '-'+suffix: ''}.${photoSplit[1]}`);
     }

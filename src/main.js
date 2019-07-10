@@ -145,17 +145,21 @@ export var createRestaurantHTML = (restaurant) => {
   <figure>
     <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}" alt="${restaurant.name} Restaurant" tabindex="0">
     <figcaption>
-      <h1 tabindex="0">${restaurant.name}</h1>
+      <h1 tabindex="0">${restaurant.name} </h1>
       <p tabindex="0">${restaurant.neighborhood}</p>
       <p tabindex="0">${restaurant.address}</p>
       
     </figcaption>
+    ${getFavoriteIcon(restaurant.is_favorite)}
   </figure>
   <a href="${DBHelper.urlForRestaurant(restaurant)}">View Details!</a>
   `;
   li.innerHTML = liInner;
   return li;
 }
+
+var getFavoriteIcon = (is_favorite) => `<i class="fa fa-heart ${is_favorite === "true"? "": "not-"}favorite favorite-icon"></i>`;
+
 
 /**
  * Add markers for current restaurants to the map.

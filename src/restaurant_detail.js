@@ -37,13 +37,19 @@ var fetchRestaurantFromURL = () => {
       return DBHelper.fetchRestaurantById(id)
       .then( restaurant => {
         self.restaurant = restaurant;
-        if (!restaurant) {
-          console.error(error);
-          return;
-        }
-        
-        fillRestaurantHTML(restaurant);
-        return resolve(restaurant);
+
+        DBHelper.fetchRestaurantReviewsByRestaurant(id)
+        .then(reviews => {
+          self.restaurant.reviews = reviews;
+
+          if (!restaurant) {
+            console.error(error);
+            return;
+          }
+
+          fillRestaurantHTML(restaurant);
+          return resolve(restaurant);
+        });
     });
   }
   })
@@ -54,7 +60,7 @@ var fetchRestaurantFromURL = () => {
  */
 var fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
-  name.innerHTML = restaurant.name;
+  name.innerHTML = `${restaurant.name} ${getFavoriteIcon(restaurant.is_favorite)}`;
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -79,6 +85,8 @@ var fillRestaurantHTML = (restaurant = self.restaurant) => {
   // fill reviews
   fillReviewsHTML();
 }
+
+var getFavoriteIcon = (is_favorite) => `<i class="fa fa-heart ${is_favorite === "true"? "": "not-"}favorite"></i>`;
 
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
@@ -129,18 +137,21 @@ var fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 var createReviewHTML = (review) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
+  name.className = "review_name";
   name.innerHTML = review.name;
   name.tabIndex = 0;
   li.appendChild(name);
   li.tabIndex = 0;
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.className ="review_date";
+  date.innerHTML = new Date(review.createdAt).toDateString();
   date.tabIndex = 0;
   li.appendChild(date);
 
   const rating = document.createElement('p');
-  rating.innerHTML = `Rating: ${review.rating}`;
+  rating.className = "review_rating";
+  rating.innerHTML = `Rating: ${[...Array(review.rating)].map((_, i) => '<i class="fa fa-star rating"></i>').join('')}`;
   rating.tabIndex = 0;
   li.appendChild(rating);
 

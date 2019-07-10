@@ -211,7 +211,7 @@ nav {
     align-content: space-evenly;
     justify-content: space-between;
 
-    a {
+    a.details-btn {
       background-color: $buttonBgColor;
       border-bottom: 3px solid #eee;
       color: $buttonFgColor;
@@ -230,8 +230,18 @@ nav {
 
       figcaption {
         grid-column: 2/-1;
+        grid-row:1;
+      }
+
+      a.make-favorite-link {
+        background-color: none;
+        border: none;
+        text-decoration: none;
+        grid-row: 1;
+        grid-column: -2;
       }
     }
+
   }
 
   .restaurant-img {
@@ -393,8 +403,3 @@ nav {
 //   }
 // }
 
-.favorite-icon {
-  grid-row: 1;
-  grid-column: -2;
-  font-size: 20px;
-}

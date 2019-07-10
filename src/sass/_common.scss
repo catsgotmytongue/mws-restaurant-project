@@ -1,6 +1,9 @@
+.favorite-icon {
+  font-size: 20px;
+  cursor: hand;
+  color: $notFavoriteIconColor;
+}
+
 .favorite {
   color: $favoriteIconColor;
-}
-.not-favorite {
-  color: $notFavoriteIconColor;
 }

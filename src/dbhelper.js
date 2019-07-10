@@ -120,7 +120,8 @@ export class DBHelper {
    * @param {boolean} isFavorite
    */
   static favoriteRestaurant(restaurantId, isFavorite){
-    
+    return fetch(`${DBHelper.ApiUrl}/restaurants/${restaurantId}/?is_favorite=${isFavorite}`, {method: "put"})
+    .then(res => res.json());
   }
 
   /**

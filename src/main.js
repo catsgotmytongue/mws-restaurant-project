@@ -22,7 +22,7 @@ window.initMap = function() {
    });
    updateRestaurants();
  }
-
+ window.toggleFavorite = toggleFavorite;
  window.updateRestaurants = updateRestaurants;
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -150,17 +150,37 @@ export var createRestaurantHTML = (restaurant) => {
       <p tabindex="0">${restaurant.address}</p>
       
     </figcaption>
-    ${getFavoriteIcon(restaurant.is_favorite)}
+    <a href="javascript:toggleFavorite(${restaurant.id}, ${restaurant.is_favorite}, 'fav-${restaurant.id}')" class="make-favorite-link">
+      ${getFavoriteIcon(restaurant.id, restaurant.is_favorite)}
+    </a>
   </figure>
-  <a href="${DBHelper.urlForRestaurant(restaurant)}">View Details!</a>
+  <a href="${DBHelper.urlForRestaurant(restaurant)}" class="details-btn">View Details!</a>
   `;
   li.innerHTML = liInner;
   return li;
 }
 
-var getFavoriteIcon = (is_favorite) => `<i class="fa fa-heart ${is_favorite === "true"? "": "not-"}favorite favorite-icon"></i>`;
+var getFavoriteIcon = (restaurantId, is_favorite) => `<i id="fav-${restaurantId}" class="fa fa-heart ${is_favorite === "true"? "favorite":""} favorite-icon"></i>`;
 
+/**
+ * 
+ * @param {number} restaurantId 
+ * @param {boolean} is_favorite 
+ * @param {string} elementId 
+ */
+export function toggleFavorite(restaurantId, is_favorite, elementId) {
+  let el = document.getElementById(elementId);
+  
+  let newFavoriteVal = !el.classList.contains('favorite');
 
+  console.log(`${is_favorite} => ${newFavoriteVal}`);
+  
+  DBHelper.favoriteRestaurant(restaurantId, newFavoriteVal)
+  .then(res => {
+    console.log("res from favs %o", res);
+    el.classList.toggle('favorite', newFavoriteVal);
+  });
+}
 /**
  * Add markers for current restaurants to the map.
  */

@@ -1,6 +1,6 @@
 import {openDB} from 'idb';
 
-const dbVersion = 21;
+const dbVersion = 26;
 const dbName = 'restaurants';
 const restaurantsCollection = "restaurants";
 const reviewsCollection = "reviews";
@@ -17,7 +17,13 @@ export var OpenDatabase = () => {
         if(!db.objectStoreNames.contains(objStore)){
           db.createObjectStore(objStore, {keyPath: 'id'});
         }
-      });      
+      });
+      
+      if(newVersion >= 22) {
+        console.log("create reviews index");
+        let reviewsStore = transaction.objectStore(reviewsCollection);
+        reviewsStore.createIndex('reviewsByRestaurant', 'restaurant_id');
+      }
     },
     blocked() {
       console.log(`OpenDB: blocked...`);
@@ -100,9 +106,14 @@ export class DBHelper {
    * @param {number} restaurantId
    */
   static fetchRestaurantReviewsByRestaurant(restaurantId) {
-    //todo wire up indexeddb here
-    return fetch(`${DBHelper.ApiUrl}/reviews/?restaurant_id=${restaurantId}`).then(res => res.json())
-    .catch(err=>console.log(err));
+    console.log(`fetch restaurant reviews by restaurant_id ${restaurantId}`);
+    return dbPromise.then(db => db.transaction(reviewsCollection, 'readonly')
+        .objectStore(reviewsCollection)
+        .index('reviewsByRestaurant')
+        .getAll(parseInt(restaurantId)))
+        .then( revs => console.log('reviews from idb: %o', revs))
+        .then( reviews => reviews || fetch(`${DBHelper.ApiUrl}/reviews/?restaurant_id=${restaurantId}`).then(res => res.json()))
+        .catch(err => console.log(`fetchRestaurantReviewsByRestaurant(${restaurantId}): ${err}`));
   }
   
   /**

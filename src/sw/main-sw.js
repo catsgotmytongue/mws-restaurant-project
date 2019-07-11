@@ -1,6 +1,6 @@
 import {DBHelper} from '../dbhelper.js';
 
-const version = 91;
+const version = 92;
 
 const apiUrl = new URL(`${DBHelper.ApiUrl}/restaurants`);
 
@@ -32,6 +32,7 @@ self.addEventListener('install', event => {
       `/dbhelper.js`,
       `/restaurant_detail.js`,
       '/register_sw.js',
+      'https://kit.fontawesome.com/be9114bde4.js'
     ]))
     .catch(err=> console.log('Error when adding cached items %o', err))
   )
@@ -125,7 +126,6 @@ self.addEventListener('fetch', event => {
           return res;
         })
       );
-      
     }
     return;
   }

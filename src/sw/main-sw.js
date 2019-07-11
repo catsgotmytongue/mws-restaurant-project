@@ -1,8 +1,8 @@
 import {DBHelper} from '../dbhelper.js';
 
-const version = 82;
+const version = 91;
 
-const apiUrl = new URL(DBHelper.ApiUrl);
+const apiUrl = new URL(`${DBHelper.ApiUrl}/restaurants`);
 
 const cacheNamePrefix = 'restaurant-';
 const staticCacheName = `${cacheNamePrefix}static-cache-v`;
@@ -100,18 +100,33 @@ self.addEventListener('fetch', event => {
   {
     console.log("API Call %o, %o", requestUrl.href, apiUrl.href);
     if(requestUrl.href === apiUrl.href) {
+      // handle /restaurants endpoint
       event.respondWith(
         fetch(event.request)
         .then(res => {
           const clonedRes = res.clone();
           clonedRes.json().then( restaurants => {
             DBHelper.putRestaurants(restaurants)
-          })
+          });
           return res;
         }) 
       );
     }
 
+    if(requestUrl.pathname.startsWith("/reviews")) {
+      const restaurantId = getParameterByName('restaurant_id', requestUrl.href);
+      console.log("REVIEWS call for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
+      event.respondWith( 
+        fetch(event.request)
+        .then(res => {
+          res.clone().json().then(reviews => {
+            DBHelper.putRestaurantReviewsforRestaurant(reviews);            
+          });
+          return res;
+        })
+      );
+      
+    }
     return;
   }
 
@@ -160,4 +175,21 @@ function serveAsset(request) {
       }) 
     )
   );
+}
+
+/**
+ * Get a parameter by name from page URL.
+ */
+var getParameterByName = (name, url) => {
+  if(!url)
+    throw("url is undefined");
+
+  name = name.replace(/[\[\]]/g, '\\$&');
+  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
+    results = regex.exec(url);
+  if (!results)
+    return null;
+  if (!results[2])
+    return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }

@@ -1,16 +1,23 @@
 import {openDB} from 'idb';
 
-const dbVersion = 19;
+const dbVersion = 21;
 const dbName = 'restaurants';
+const restaurantsCollection = "restaurants";
+const reviewsCollection = "reviews";
+const objectStores = [restaurantsCollection, reviewsCollection];
 
 export var OpenDatabase = () => {
   console.log("DBHELPER: OPEN DB");
   return openDB(dbName, dbVersion, {
     upgrade(db, oldVersion, newVersion, transaction) {
       console.log(`OpenDB: upgrade... ${{db, oldVersion, newVersion, transaction}}`);
-      if(!db.objectStoreNames.contains(dbName)) {
-        db.createObjectStore(dbName, {keyPath: 'id'});
-      }
+
+      // ensure all object stores exist
+      objectStores.forEach(objStore => {
+        if(!db.objectStoreNames.contains(objStore)){
+          db.createObjectStore(objStore, {keyPath: 'id'});
+        }
+      });      
     },
     blocked() {
       console.log(`OpenDB: blocked...`);
@@ -93,6 +100,7 @@ export class DBHelper {
    * @param {number} restaurantId
    */
   static fetchRestaurantReviewsByRestaurant(restaurantId) {
+    //todo wire up indexeddb here
     return fetch(`${DBHelper.ApiUrl}/reviews/?restaurant_id=${restaurantId}`).then(res => res.json())
     .catch(err=>console.log(err));
   }
@@ -251,6 +259,19 @@ export class DBHelper {
           store.put(restaurant);
           return tx.done;
         });              
+      }
+     }
+
+    static putRestaurantReviewsforRestaurant(reviews) {
+      console.log("Put to indexedDB reviews: %o", reviews);
+      for( var key in reviews) {
+        const review = reviews[key];
+        dbPromise.then( db => {
+          var tx = db.transaction(reviewsCollection, 'readwrite');
+          var store = tx.objectStore(reviewsCollection);
+          store.put(review);
+          return tx.done;
+        });
       }
      }
 }

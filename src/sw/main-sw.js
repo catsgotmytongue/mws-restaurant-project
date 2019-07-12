@@ -2,7 +2,7 @@ import {DBHelper} from '../dbhelper.js';
 import {ApiHelper} from '../apihelper.js';
 import {UrlHelper} from '../urlHelper.js';
 
-const version = 101;
+const version = 111;
 
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 
@@ -92,7 +92,7 @@ self.addEventListener('fetch', event => {
   // otherwise return from a cached response or network response appropriately
   event.respondWith(
     caches.match(event.request)
-      .then(response => response || fetch(event.request) )
+      .then(response => response || fetch(event.request).catch(err=> console.log('error fetching: %o', event.request)) )
       .catch(reason => console.log("Cache miss: ",reason)) 
   );
   return;
@@ -105,49 +105,64 @@ self.addEventListener('message', event => {
   }
 });
 
+function jsonResponse(obj) {
+  return new Response(JSON.stringify(obj), {
+  headers: {'Content-Type': 'application/json'}
+});
+}
 
-function fetchApiResponse(event, requestUrl) {
+
+async function fetchApiResponse(event, requestUrl) {
   console.log("fetchApiResponse: %o, %o", requestUrl.href, apiUrl.href);
   
   if(requestUrl.href === apiUrl.href) {
+    console.log('handle promises with await!')
     // handle /restaurants endpoint
-    return fetch(event.request).then(res => {
-        const clonedRes = res.clone();
-        clonedRes.json().then( restaurants => {
-          DBHelper.addRestaurants(restaurants)
-        });
-        return res;
-      });
+    let restaurants = await DBHelper.getRestaurants();
+    console.log('restaurants from db: %o', restaurants);
+    
+    if(restaurants && restaurants.length > 0)
+      return jsonResponse(restaurants);
+      
+    const res = await fetch(event.request);
+    const clonedRes = res.clone();
+    restaurants = await clonedRes.json();
+    DBHelper.addRestaurants(restaurants);
+
+    return res;
   }
 
   if(requestUrl.pathname.startsWith("/reviews")) {
     const restaurantId = getParameterByName('restaurant_id', requestUrl.href);
     console.log("fetchApiResponse: reviews for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
     
-    return fetch(event.request).then(res => {
-            const clonedRes = res.clone();
-            clonedRes.json().then(reviews => {
-             DBHelper.addRestaurantReviewsforRestaurant(reviews);
-            });
-          return res;
-        });
+    let reviews = await DBHelper.getRestaurantReviewsByRestaurant(restaurantId);
+    if(reviews && reviews.length > 0)
+      return jsonResponse(reviews);
+    
+    const res = await fetch(event.request);
+    const clonedRes = res.clone();
+    reviews = await clonedRes.json();
+    DBHelper.addRestaurantReviewsforRestaurant(reviews);
+    return res;
   }
 
   if(requestUrl.pathname.startsWith('/restaurants/')) {
-    console.log('try to add restaurant based on %o', requestUrl.pathname);
-    return fetch(event.request).then( res => {
-      const clonedRes = res.clone();
-      clonedRes.json().then(restaurant => {
-        DBHelper.addRestaurant(restaurant);
-      });
-      return res;
-    });
+    const id = requestUrl.pathname.replace('/restaurants/', '');
+    console.log('try to add restaurant based on %o, %o', requestUrl.pathname, id);
+    let restaurant = await DBHelper.getRestaurantById(id);
+    if(restaurant)
+      return jsonResponse(restaurant);
+
+    const res = await ApiHelper.fetchRestaurantById(id);
+    restaurant = await res.clone().json();
+    DBHelper.addRestaurant(restaurant);
+    return res;
   }
 
   console.log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);
-  return caches.match(event.request).then(response => 
-    response || fetch(event.request) )
-  .catch(reason => console.log("fetchApiResponse::Cache miss: ",reason)); 
+  let response = await caches.match(event.request);
+  return response || fetch(event.request).catch(reason => console.log("fetchApiResponse::Cache miss: ",reason)); 
 }
 
 function fetchSameOriginResponse(event, requestUrl) {

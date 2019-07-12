@@ -47,6 +47,7 @@ export class DBHelper {
    * Fetch all restaurants.
    */
   static getRestaurants() {
+    console.log('getRestaurants...')
     return dbPromise.then(db => {
       var store = db.transaction(dbName, 'readonly').objectStore(dbName);
       return store.getAll();
@@ -72,15 +73,16 @@ export class DBHelper {
   }
 
   // todo: handle in service worker 
-  // /**
-  //  * Fetch a restaurant by its ID. - /restaurants/<restaurant_id>
-  //  */
-  // static getRestaurantById(id) {
-  //   return DBHelper.getRestaurantById(id).then( restaurant => {
-  //     return restaurant || fetch(`${DBHelper.ApiUrl}/restaurants/${id}`).then( res => res.json());
-  //   })
-  //   .catch( err => console.log('Restaurant does not exist') );
-  // }
+  /**
+   * Fetch a restaurant by its ID. - /restaurants/<restaurant_id>
+   */
+  static getRestaurantById(id) {
+    return dbPromise.then( db => {
+      var store = db.transaction(restaurantsCollection, 'readonly').objectStore(restaurantsCollection);
+      return store.get(parseInt(id));
+    })
+    .catch( err => console.log('Restaurant does not exist') );
+  }
 
   
   /*
@@ -220,6 +222,7 @@ export class DBHelper {
   //   }
     
   static addRestaurants(restaurants) {
+      console.log('addRestaurants: %o', restaurants);
       dbPromise.then( db => {
         var tx = db.transaction(restaurantsCollection, 'readwrite');
         var store = tx.objectStore(restaurantsCollection);

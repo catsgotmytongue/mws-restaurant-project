@@ -1,5 +1,9 @@
 import "./sass/restaurant-detail.scss";
-import {DBHelper} from './dbhelper';
+
+import {mapMarkerForRestaurant} from './commonFunctions';
+
+import {ApiHelper} from './apihelper';
+import {UrlHelper} from './urlHelper';
 let restaurant;
 var map;
 
@@ -15,7 +19,7 @@ window.initMap = function() {
         scrollwheel: false
       });
       fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+      mapMarkerForRestaurant(self.restaurant, self.map);
   })
   .catch( err => console.error(err) );
 }
@@ -34,11 +38,11 @@ var fetchRestaurantFromURL = () => {
     if (!id) { // no id found in URL
       reject('No restaurant id in URL');
     } else {
-      return DBHelper.fetchRestaurantById(id)
+      return ApiHelper.fetchRestaurantById(id)
       .then( restaurant => {
         self.restaurant = restaurant;
 
-        DBHelper.fetchRestaurantReviewsByRestaurant(id)
+        ApiHelper.fetchRestaurantReviewsByRestaurant(id)
         .then(reviews => {
           self.restaurant.reviews = reviews;
 
@@ -69,9 +73,9 @@ var fillRestaurantHTML = (restaurant = self.restaurant) => {
   image.className = 'restaurant-img'
   
   
-  const src1 = DBHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
-  const src2 = DBHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
-  const src3 = DBHelper.imageUrlForRestaurant(restaurant, "1600")+' 800w';
+  const src1 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
+  const src2 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
+  const src3 = UrlHelper.imageUrlForRestaurant(restaurant, "1600")+' 800w';
   image.src = src1;
   image.srcset = `${src1}, ${src2}, ${src3}`
   image.alt = `${restaurant.name}`;

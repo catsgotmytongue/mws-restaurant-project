@@ -47,4 +47,9 @@ var registerServiceWorker = function(serviceWorkerFile) {
   }
 };
 
-registerServiceWorker("./sw.js");
+// wait until after page loads to register a service worker
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function() {
+    registerServiceWorker("./sw.js");
+  });
+}

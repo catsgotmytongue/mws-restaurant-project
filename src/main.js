@@ -1,6 +1,8 @@
 import "./sass/restaurant-list.scss";
 
-import { DBHelper } from './dbhelper';
+import { ApiHelper } from './apihelper';
+import { UrlHelper } from './urlHelper';
+import { mapMarkerForRestaurant } from './commonFunctions';
 
 let restaurants,
   neighborhoods,
@@ -36,7 +38,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
  * Fetch all neighborhoods and set their HTML.
  */
 export var fetchNeighborhoods = () => {
-  DBHelper.fetchNeighborhoods()
+  ApiHelper.fetchNeighborhoods()
   .then( neighborhoods => {
     self.neighborhoods = neighborhoods;
     fillNeighborhoodsHTML(neighborhoods);
@@ -60,7 +62,7 @@ export var fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
  * Fetch all cuisines and set their HTML.
  */
 export var fetchCuisines = () => {
-  DBHelper.fetchCuisines()
+  ApiHelper.fetchCuisines()
   .then(cuisines => {
       self.cuisines = cuisines;
       fillCuisinesHTML();
@@ -95,7 +97,7 @@ export function updateRestaurants() {
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood)
+  ApiHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood)
   .then(restaurants => {
     resetRestaurants(restaurants);
     fillRestaurantsHTML();
@@ -137,9 +139,9 @@ export var fillRestaurantsHTML = (restaurants = self.restaurants) => {
 export var createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
-  const src1 = DBHelper.imageUrlForRestaurant(restaurant, "600")+' 400w';
-  const src2 = DBHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
-  const src3 = DBHelper.imageUrlForRestaurant(restaurant, "1600")+' 1600w';
+  const src1 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 400w';
+  const src2 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
+  const src3 = UrlHelper.imageUrlForRestaurant(restaurant, "1600")+' 1600w';
   
   const liInner = `
   <figure>
@@ -154,7 +156,7 @@ export var createRestaurantHTML = (restaurant) => {
       ${getFavoriteIcon(restaurant.id, restaurant.is_favorite)}
     </a>
   </figure>
-  <a href="${DBHelper.urlForRestaurant(restaurant)}" class="details-btn">View Details!</a>
+  <a href="${UrlHelper.urlForRestaurant(restaurant)}" class="details-btn">View Details!</a>
   `;
   li.innerHTML = liInner;
   return li;
@@ -175,7 +177,7 @@ export function toggleFavorite(restaurantId, is_favorite, elementId) {
 
   console.log(`${is_favorite} => ${newFavoriteVal}`);
   
-  DBHelper.favoriteRestaurant(restaurantId, newFavoriteVal)
+  ApiHelper.favoriteRestaurant(restaurantId, newFavoriteVal)
   .then(res => {
     console.log("res from favs %o", res);
     el.classList.toggle('favorite', newFavoriteVal);
@@ -187,7 +189,7 @@ export function toggleFavorite(restaurantId, is_favorite, elementId) {
 export var addMarkersToMap = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
-    const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
+    const marker = mapMarkerForRestaurant(restaurant, self.map);
     google.maps.event.addListener(marker, 'click', () => {
       window.location.href = marker.url
     });

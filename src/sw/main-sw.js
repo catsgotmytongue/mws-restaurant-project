@@ -1,8 +1,10 @@
 import {DBHelper} from '../dbhelper.js';
+import {ApiHelper} from '../apihelper.js';
+import {UrlHelper} from '../urlHelper.js';
 
-const version = 92;
+const version = 101;
 
-const apiUrl = new URL(`${DBHelper.ApiUrl}/restaurants`);
+const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 
 const cacheNamePrefix = 'restaurant-';
 const staticCacheName = `${cacheNamePrefix}static-cache-v`;
@@ -14,7 +16,6 @@ const currentCaches = [
   currentImgCacheName
 ];
 
-//console.log('DBHELPER %o', DBHelper);
 console.log(`Running sw.js version ${version}`);
 
 // install is called when service worker is actually installed
@@ -56,6 +57,13 @@ self.addEventListener('activate', event => {
       )
     ) 
   ); 
+
+  console.log('createDB() from service worker activation...');
+  // reccomended creation of DB during SW activation event: 
+  // https://developers.google.com/web/ilt/pwa/live-data-in-the-service-worker
+  event.waitUntil(
+    DBHelper.createDB()
+  );
 });
 
 // listen for requests
@@ -66,71 +74,22 @@ self.addEventListener('fetch', event => {
 
   // make sure to handle only our origin's requests
   if (requestUrl.origin === location.origin) {
-    // handle root, when offline
-    if(requestUrl.pathname === '/') {
-      event.respondWith( caches.match('/index.html') );
-    }
-
-    // handle image requests
-    if(requestUrl.pathname.startsWith(DBHelper.IMAGE_ROOT)) {
-      event.respondWith( serveImage(event.request) );
-      return;
-    }
-
-    if(requestUrl.pathname.startsWith('/restaurant.html')){
-      event.respondWith( caches.match(event.request, {ignoreSearch: true}));
-      return;
-    }
-
-    
-    // same origin .css or .js updates
-    // if(requestUrl.pathname.endsWith('.css') || requestUrl.pathname.endsWith('.js')) {
-    //   event.respondWith( serveAsset(event.request) );
-    //   return;
-    // }
-
-    // any other request return a cached response or fetch it
-    event.respondWith( 
-      caches.match(event.request)
-      .then(response => response || fetch(event.request) )
-      .catch(reason => console.log("Cache miss: ",reason)) );
-      return;
-  }
-
-  if(requestUrl.origin == apiUrl.origin)
-  {
-    console.log("API Call %o, %o", requestUrl.href, apiUrl.href);
-    if(requestUrl.href === apiUrl.href) {
-      // handle /restaurants endpoint
-      event.respondWith(
-        fetch(event.request)
-        .then(res => {
-          const clonedRes = res.clone();
-          clonedRes.json().then( restaurants => {
-            DBHelper.putRestaurants(restaurants)
-          });
-          return res;
-        }) 
-      );
-    }
-
-    if(requestUrl.pathname.startsWith("/reviews")) {
-      const restaurantId = getParameterByName('restaurant_id', requestUrl.href);
-      console.log("REVIEWS call for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
-      event.respondWith( 
-        fetch(event.request)
-        .then(res => {
-          res.clone().json().then(reviews => {
-            DBHelper.putRestaurantReviewsforRestaurant(reviews);            
-          });
-          return res;
-        })
-      );
-    }
+    event.respondWith(
+      fetchSameOriginResponse(event, requestUrl)
+    );
     return;
   }
 
-  //console.log("Outside Origin: %o", requestUrl);
+  // api origin requests
+  if(requestUrl.origin == apiUrl.origin)
+  {
+    event.respondWith(
+      fetchApiResponse(event, requestUrl)
+    );
+    return;
+  }
+
+  // otherwise return from a cached response or network response appropriately
   event.respondWith(
     caches.match(event.request)
       .then(response => response || fetch(event.request) )
@@ -145,6 +104,72 @@ self.addEventListener('message', event => {
     self.skipWaiting();
   }
 });
+
+
+function fetchApiResponse(event, requestUrl) {
+  console.log("fetchApiResponse: %o, %o", requestUrl.href, apiUrl.href);
+  
+  if(requestUrl.href === apiUrl.href) {
+    // handle /restaurants endpoint
+    return fetch(event.request).then(res => {
+        const clonedRes = res.clone();
+        clonedRes.json().then( restaurants => {
+          DBHelper.addRestaurants(restaurants)
+        });
+        return res;
+      });
+  }
+
+  if(requestUrl.pathname.startsWith("/reviews")) {
+    const restaurantId = getParameterByName('restaurant_id', requestUrl.href);
+    console.log("fetchApiResponse: reviews for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
+    
+    return fetch(event.request).then(res => {
+            const clonedRes = res.clone();
+            clonedRes.json().then(reviews => {
+             DBHelper.addRestaurantReviewsforRestaurant(reviews);
+            });
+          return res;
+        });
+  }
+
+  if(requestUrl.pathname.startsWith('/restaurants/')) {
+    console.log('try to add restaurant based on %o', requestUrl.pathname);
+    return fetch(event.request).then( res => {
+      const clonedRes = res.clone();
+      clonedRes.json().then(restaurant => {
+        DBHelper.addRestaurant(restaurant);
+      });
+      return res;
+    });
+  }
+
+  console.log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);
+  return caches.match(event.request).then(response => 
+    response || fetch(event.request) )
+  .catch(reason => console.log("fetchApiResponse::Cache miss: ",reason)); 
+}
+
+function fetchSameOriginResponse(event, requestUrl) {
+  // handle root, when offline
+  if(requestUrl.pathname === '/') {
+    return caches.match('/index.html');
+  }
+
+  // handle image requests
+  if(requestUrl.pathname.startsWith(UrlHelper.IMAGE_ROOT)) {
+    return serveImage(event.request);
+  }
+
+  if(requestUrl.pathname.startsWith('/restaurant.html')){
+    return caches.match(event.request, {ignoreSearch: true});
+  }
+
+  // any other request return a cached response or fetch it
+  return caches.match(event.request).then(response => 
+    response || fetch(event.request) )
+    .catch(reason => console.log("Cache miss: %o %o", reason, event.request));
+}
 
 function serveImage(request) {
   let imgKey = request.url.replace(/-\d+\.jpg$/, '');

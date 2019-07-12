@@ -12,7 +12,10 @@
     <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
 
-  <body>
+  <body
+    onload="updateIndicator()"
+    ononline="updateIndicator()"
+    onoffline="updateIndicator()">
     <header>
       <nav>
         <h1><a href="/">Restaurant Reviews</a></h1>
@@ -57,12 +60,20 @@
 
     <script src="register_sw.js"></script>
     <script src="https://kit.fontawesome.com/be9114bde4.js"></script>
+    <script>
+      function updateIndicator() {
+          document.getElementById('indicator').textContent = navigator.onLine ? 'online' : 'offline';
+        }
+    </script>
     <footer id="footer">
       Copyright (c) 2017
       <a href="/">
         <strong>Restaurant Reviews</strong>
       </a>
       All Rights Reserved.
+      <br>
+      <p style="background-color: grey">The network is: <span id="indicator">(state unknown)</span>
+    </p>
     </footer>
   </body>
 </html>

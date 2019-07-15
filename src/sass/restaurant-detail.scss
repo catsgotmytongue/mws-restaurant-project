@@ -387,3 +387,35 @@ nav {
 .rating {
   color: #826901;
 }
+
+section#new-review {
+
+  form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 30px 30px 5px 8fr 1fr;
+    grid-gap: 2%;
+    padding-bottom: 30px;
+    padding-left: 10px;
+    padding-right: 10px;
+    grid-row-gap: 20px; 
+    
+    #new-review-name {
+
+    }
+    
+    #new-review-comment, button {
+      grid-column: 1/ -1;
+    }
+  }
+
+
+}
+
+.page-section {
+  color: #804100;
+  font-size: 16pt;
+  font-weight: 300;
+  letter-spacing: -1px;
+  padding-bottom: 1pt;
+}

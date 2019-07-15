@@ -229,8 +229,9 @@ export class DBHelper {
         for( var key in restaurants) {
           const restaurant = restaurants[key];
           store.put(restaurant);
-          return tx.done;
+          
         }
+        return tx.done;
       });
     }
 

@@ -61,7 +61,8 @@ export class ApiHelper {
    * @param {{restaurant_id: number, name: string, rating: number, comments: string}} review
    */
   static postRestaurantReview(review) {
-    
+    console.log('post review %o', review);
+    return fetch(`${ApiHelper.ApiUrl}/reviews`, {method: "post"}).then(res => res.json())
   }
 
   /**

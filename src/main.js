@@ -2,7 +2,7 @@ import "./sass/restaurant-list.scss";
 
 import { ApiHelper } from './apihelper';
 import { UrlHelper } from './urlHelper';
-import { mapMarkerForRestaurant } from './commonFunctions';
+import { mapMarkerForRestaurant, detectOnlineStatus } from './commonFunctions';
 
 let restaurants,
   neighborhoods,
@@ -26,6 +26,17 @@ window.initMap = function() {
  }
  window.toggleFavorite = toggleFavorite;
  window.updateRestaurants = updateRestaurants;
+
+ window.addEventListener('offline', function(event) {
+  console.log("Index: We are offline! :(");
+  window.document.querySelector('.network-indicator').classList.add('offline');
+});
+
+window.addEventListener('online', function(event) {
+  console.log("Index: We are online! :)");
+  window.document.querySelector('.network-indicator').classList.remove('offline');
+
+});
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */

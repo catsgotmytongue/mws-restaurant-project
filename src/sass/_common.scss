@@ -7,3 +7,13 @@
 .favorite {
   color: $favoriteIconColor;
 }
+
+.network-indicator {
+  display: none;
+  background: yellowgreen;
+  width: 100%;
+}
+
+.offline {
+  display: block;
+}

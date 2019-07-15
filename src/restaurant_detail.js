@@ -24,6 +24,8 @@ window.initMap = function() {
   .catch( err => console.error(err) );
 }
 
+window.saveReview = saveReview;
+
 /**
  * Get current restaurant from page URL.
  */
@@ -193,4 +195,8 @@ var getParameterByName = (name, url) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+var saveReview = () => {
+  console.log("Save review: %o", arguments);
 }

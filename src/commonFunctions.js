@@ -9,4 +9,14 @@ export function mapMarkerForRestaurant(restaurant, map) {
     animation: google.maps.Animation.DROP}
     );
     return marker;
-  }
+}
+
+export function detectOnlineStatus() {
+  window.addEventListener('offline', function(event) {
+    console.log("We are offline! :(");
+  });
+  
+  window.addEventListener('online', function(event) {
+    console.log("We are online! :)");
+  });
+}

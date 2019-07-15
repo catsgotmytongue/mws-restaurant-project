@@ -2,7 +2,7 @@ import {DBHelper} from '../dbhelper.js';
 import {ApiHelper} from '../apihelper.js';
 import {UrlHelper} from '../urlHelper.js';
 
-const version = 111;
+const version = 125;
 
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 
@@ -105,6 +105,11 @@ self.addEventListener('message', event => {
   }
 });
 
+// background sync API
+self.addEventListener('sync', event =>{
+  console.log('sync event: %o', event);
+});
+
 function jsonResponse(obj) {
   return new Response(JSON.stringify(obj), {
   headers: {'Content-Type': 'application/json'}
@@ -165,21 +170,46 @@ async function fetchApiResponse(event, requestUrl) {
   return response || fetch(event.request).catch(reason => console.log("fetchApiResponse::Cache miss: ",reason)); 
 }
 
-function fetchSameOriginResponse(event, requestUrl) {
-  // handle root, when offline
-  if(requestUrl.pathname === '/') {
-    return caches.match('/index.html');
+async function fetchSameOriginResponse(event, requestUrl) {
+  console.log('SameOriginFetch: %o', event);
+
+  if(event.request.method === 'GET') {
+    // handle root, when offline
+    if(requestUrl.pathname === '/') {
+      return caches.match('/index.html');
+    }
+
+    // handle image requests
+    if(requestUrl.pathname.startsWith(UrlHelper.IMAGE_ROOT)) {
+      return serveImage(event.request);
+    }
+
+    if(requestUrl.pathname.startsWith('/restaurant.html')){
+      return caches.match(event.request, {ignoreSearch: true});
+    }
   }
 
-  // handle image requests
-  if(requestUrl.pathname.startsWith(UrlHelper.IMAGE_ROOT)) {
-    return serveImage(event.request);
-  }
+  if(event.request.method === 'POST') {
+    var reqClone = event.request.clone();
+    var reqjson = (await reqClone.text())
+                  .split('&')
+                  .map(d=>{var b = d.split('='); var f={}; f[b[0]] = b[1]; return f; })
+                  .reduce( (acc, current) => ({...acc, ...current}) );
+    var restaurantId = getParameterByName('id', requestUrl);
+    var dataObj = {...reqjson, restaurant_id: restaurantId};
+    console.log("intercepted post: %o, %o, ", event, reqClone, dataObj);
 
-  if(requestUrl.pathname.startsWith('/restaurant.html')){
-    return caches.match(event.request, {ignoreSearch: true});
-  }
+    ApiHelper.postRestaurantReview(dataObj).then( review => {
+      console.log('Posted review: %o', review);
+    }).catch( err => {
+      console.log('Error in post %o', err)
+      //todo: store in indexedDB to try later ?
 
+    });
+
+    return jsonResponse(dataObj);
+
+  }
   // any other request return a cached response or fetch it
   return caches.match(event.request).then(response => 
     response || fetch(event.request) )

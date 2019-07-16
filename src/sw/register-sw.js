@@ -1,8 +1,12 @@
+import {log} from '../commonFunctions';
+
+const logPrefix = '[Register SW]';
+ 
 var registerServiceWorker = function(serviceWorkerFile) {
   if(navigator.serviceWorker) {
     navigator.serviceWorker.register(serviceWorkerFile)
     .then( swRegistration => {
-      console.log("Service worker registered: %o", swRegistration);
+      log(logPrefix,"Service worker registered: %o", swRegistration);
   
       if (!navigator.serviceWorker.controller) {
         return;
@@ -14,7 +18,7 @@ var registerServiceWorker = function(serviceWorkerFile) {
         return;
       }
   
-      // watch a service working that's installing and activate when its done
+      // watch a service worker that's installing and activate when its done
       if (swRegistration.installing) {
         waitForInstalledServiceWorker(swRegistration.installing);
         return;
@@ -26,12 +30,12 @@ var registerServiceWorker = function(serviceWorkerFile) {
       );
     })
     .catch(err => {
-      console.log("Error registering service worker: %o", err);
+      log(logPrefix,"Error registering service worker: %o", err);
     });
   
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       window.location.reload();
-    })
+    });
   
     function waitForInstalledServiceWorker(worker) {
       worker.addEventListener('statechange', () => {
@@ -48,8 +52,18 @@ var registerServiceWorker = function(serviceWorkerFile) {
 };
 
 // wait until after page loads to register a service worker
-if('serviceWorker' in navigator){
+if('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     registerServiceWorker("./sw.js");
   });
+
+  if ('SyncManager' in window) {
+    navigator.serviceWorker.ready.then(function(reg) {
+      return reg.sync.register('tag-name');
+    }).catch(function() {
+      // system was unable to register for a sync,
+      // this could be an OS-level restriction
+      log(logPrefix,"Sync manager couldn't register");
+    });
+  }
 }

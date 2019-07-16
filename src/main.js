@@ -2,8 +2,9 @@ import "./sass/restaurant-list.scss";
 
 import { ApiHelper } from './apihelper';
 import { UrlHelper } from './urlHelper';
-import { mapMarkerForRestaurant, detectOnlineStatus } from './commonFunctions';
+import { mapMarkerForRestaurant, detectOnlineStatus, log } from './commonFunctions';
 
+let logPrefix = '[main.js]';
 let restaurants,
   neighborhoods,
   cuisines
@@ -28,12 +29,12 @@ window.initMap = function() {
  window.updateRestaurants = updateRestaurants;
 
  window.addEventListener('offline', function(event) {
-  console.log("Index: We are offline! :(");
+  log(logPrefix,"Index: We are offline! :(");
   window.document.querySelector('.network-indicator').classList.add('offline');
 });
 
 window.addEventListener('online', function(event) {
-  console.log("Index: We are online! :)");
+  log(logPrefix,"Index: We are online! :)");
   window.document.querySelector('.network-indicator').classList.remove('offline');
 
 });
@@ -186,11 +187,11 @@ export function toggleFavorite(restaurantId, is_favorite, elementId) {
   
   let newFavoriteVal = !el.classList.contains('favorite');
 
-  console.log(`${is_favorite} => ${newFavoriteVal}`);
+  log(logPrefix,`${is_favorite} => ${newFavoriteVal}`);
   
   ApiHelper.favoriteRestaurant(restaurantId, newFavoriteVal)
   .then(res => {
-    console.log("res from favs %o", res);
+    log(logPrefix,"res from favs %o", res);
     el.classList.toggle('favorite', newFavoriteVal);
   });
 }

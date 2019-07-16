@@ -2,7 +2,7 @@ import {DBHelper} from '../dbhelper.js';
 import {ApiHelper} from '../apihelper.js';
 import {UrlHelper} from '../urlHelper.js';
 
-const version = 125;
+const version = 5;
 
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 
@@ -16,13 +16,14 @@ const currentCaches = [
   currentImgCacheName
 ];
 
-console.log(`Running sw.js version ${version}`);
+log(`Running sw.js version ${version}`);
 
 // install is called when service worker is actually installed
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(currentStaticCacheName)
     .then(cache => cache.addAll([
+      '/',
       `/css/restaurant_detail.css`,
       `/css/restaurant_list.css`,
       '/favicon.ico',
@@ -35,13 +36,13 @@ self.addEventListener('install', event => {
       '/register_sw.js',
       'https://kit.fontawesome.com/be9114bde4.js'
     ]))
-    .catch(err=> console.log('Error when adding cached items %o', err))
+    .catch(err=> log('Error when adding cached items %o', err))
   )
 });
 
 // activate is called when an installed service worker is becoming the active service worker
 self.addEventListener('activate', event => {
-  console.log("activating service worker with version %s", version);
+  log("activating service worker with version %s", version);
 
   event.waitUntil(
     caches.keys()
@@ -51,14 +52,14 @@ self.addEventListener('activate', event => {
           .filter(cacheName => 
             (cacheName.startsWith(staticCacheName) || cacheName.startsWith(imgCacheName) ) && !currentCaches.includes(cacheName))
           .map( cacheName => {
-            console.log('deleting cache named %s', cacheName);
+            log('deleting cache named %s', cacheName);
             caches.delete( cacheName).catch("Error deleting cache named %s", cacheName);
           })
       )
     ) 
   ); 
 
-  console.log('createDB() from service worker activation...');
+  log('createDB() from service worker activation...');
   // reccomended creation of DB during SW activation event: 
   // https://developers.google.com/web/ilt/pwa/live-data-in-the-service-worker
   event.waitUntil(
@@ -92,8 +93,8 @@ self.addEventListener('fetch', event => {
   // otherwise return from a cached response or network response appropriately
   event.respondWith(
     caches.match(event.request)
-      .then(response => response || fetch(event.request).catch(err=> console.log('error fetching: %o', event.request)) )
-      .catch(reason => console.log("Cache miss: ",reason)) 
+      .then(response => response || fetch(event.request).catch(err=> log('error fetching: %o', event.request)) )
+      .catch(reason => log("Cache miss: ",reason)) 
   );
   return;
 });
@@ -107,7 +108,7 @@ self.addEventListener('message', event => {
 
 // background sync API
 self.addEventListener('sync', event =>{
-  console.log('sync event: %o', event);
+  log('sync event: %o', event);
 });
 
 function jsonResponse(obj) {
@@ -115,16 +116,19 @@ function jsonResponse(obj) {
   headers: {'Content-Type': 'application/json'}
 });
 }
+function log(str, ...args) {
+  console.log("[Service Worker]::"+str, ...args);
+}
 
 
 async function fetchApiResponse(event, requestUrl) {
-  console.log("fetchApiResponse: %o, %o", requestUrl.href, apiUrl.href);
+  log("fetchApiResponse: %o, %o", requestUrl.href, apiUrl.href);
   
   if(requestUrl.href === apiUrl.href) {
-    console.log('handle promises with await!')
+    log('handle promises with await!')
     // handle /restaurants endpoint
     let restaurants = await DBHelper.getRestaurants();
-    console.log('restaurants from db: %o', restaurants);
+    log('restaurants from db: %o', restaurants);
     
     if(restaurants && restaurants.length > 0)
       return jsonResponse(restaurants);
@@ -139,7 +143,7 @@ async function fetchApiResponse(event, requestUrl) {
 
   if(requestUrl.pathname.startsWith("/reviews")) {
     const restaurantId = getParameterByName('restaurant_id', requestUrl.href);
-    console.log("fetchApiResponse: reviews for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
+    log("fetchApiResponse: reviews for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
     
     let reviews = await DBHelper.getRestaurantReviewsByRestaurant(restaurantId);
     if(reviews && reviews.length > 0)
@@ -154,7 +158,7 @@ async function fetchApiResponse(event, requestUrl) {
 
   if(requestUrl.pathname.startsWith('/restaurants/')) {
     const id = requestUrl.pathname.replace('/restaurants/', '');
-    console.log('try to add restaurant based on %o, %o', requestUrl.pathname, id);
+    log('try to add restaurant based on %o, %o', requestUrl.pathname, id);
     let restaurant = await DBHelper.getRestaurantById(id);
     if(restaurant)
       return jsonResponse(restaurant);
@@ -165,13 +169,13 @@ async function fetchApiResponse(event, requestUrl) {
     return res;
   }
 
-  console.log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);
+  log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);
   let response = await caches.match(event.request);
-  return response || fetch(event.request).catch(reason => console.log("fetchApiResponse::Cache miss: ",reason)); 
+  return response || fetch(event.request).catch(reason => log("fetchApiResponse::Cache miss: ",reason)); 
 }
 
 async function fetchSameOriginResponse(event, requestUrl) {
-  console.log('SameOriginFetch: %o', event);
+  log('SameOriginFetch: %o', event);
 
   if(event.request.method === 'GET') {
     // handle root, when offline
@@ -197,12 +201,12 @@ async function fetchSameOriginResponse(event, requestUrl) {
                   .reduce( (acc, current) => ({...acc, ...current}) );
     var restaurantId = getParameterByName('id', requestUrl);
     var dataObj = {...reqjson, restaurant_id: restaurantId};
-    console.log("intercepted post: %o, %o, ", event, reqClone, dataObj);
+    log("intercepted post: %o, %o, ", event, reqClone, dataObj);
 
     ApiHelper.postRestaurantReview(dataObj).then( review => {
-      console.log('Posted review: %o', review);
+      log('Posted review: %o', review);
     }).catch( err => {
-      console.log('Error in post %o', err)
+      log('Error in post %o', err)
       //todo: store in indexedDB to try later ?
 
     });
@@ -213,7 +217,7 @@ async function fetchSameOriginResponse(event, requestUrl) {
   // any other request return a cached response or fetch it
   return caches.match(event.request).then(response => 
     response || fetch(event.request) )
-    .catch(reason => console.log("Cache miss: %o %o", reason, event.request));
+    .catch(reason => log("Cache miss: %o %o", reason, event.request));
 }
 
 function serveImage(request) {

@@ -1,5 +1,7 @@
 import {openDB} from 'idb';
+import {log} from './commonFunctions';
 
+const logPrefix = "[DB Helper]";
 const dbVersion = 28;
 const dbName = 'restaurants';
 const restaurantsCollection = "restaurants";
@@ -12,10 +14,10 @@ let dbPromise;
  */
 export class DBHelper {
   static createDB() {
-    console.log("DBHELPER: OPEN DB");
+    log(logPrefix,"OPEN DB");
     dbPromise = openDB(dbName, dbVersion, {
       upgrade(db, oldVersion, newVersion, transaction) {
-        console.log(`OpenDB: upgrade... ${{db, oldVersion, newVersion, transaction}}`);
+        log(logPrefix,`OpenDB: upgrade... ${{db, oldVersion, newVersion, transaction}}`);
   
         // ensure all object stores exist
         objectStores.forEach(objStore => {
@@ -25,7 +27,7 @@ export class DBHelper {
         });
         
         if(newVersion >= 22) {
-          console.log("create reviews index, if it doesn't exist");
+          log(logPrefix,"create reviews index, if it doesn't exist");
           let reviewsStore = transaction.objectStore(reviewsCollection);
           if(!reviewsStore.indexNames.contains('reviewsByRestaurant')) {
             reviewsStore.createIndex('reviewsByRestaurant', 'restaurant_id');
@@ -33,10 +35,10 @@ export class DBHelper {
         }
       },
       blocked() {
-        console.log(`OpenDB: blocked...`);
+        log(logPrefix,`OpenDB: blocked...`);
       },
       blocking() {
-        console.log(`OpenDB: blocking...`);
+        log(logPrefix,`OpenDB: blocking...`);
       }
     });
 
@@ -47,7 +49,7 @@ export class DBHelper {
    * Fetch all restaurants.
    */
   static getRestaurants() {
-    console.log('getRestaurants...')
+    log(logPrefix,'getRestaurants...')
     return dbPromise.then(db => {
       var store = db.transaction(dbName, 'readonly').objectStore(dbName);
       return store.getAll();
@@ -55,14 +57,14 @@ export class DBHelper {
 
     // todo: handle this in service worker
     // .then( restaurants => {
-    //   console.log('[] from db: %o', restaurants);
+    //   log(logPrefix,'[] from db: %o', restaurants);
     //   if(restaurants && restaurants.length > 0)
     //     return restaurants;
 
     //   return fetch(`${DBHelper.ApiUrl}/restaurants`).then(res=> res.json());
     //   // return restaurants || fetch(DBHelper.ApiUrl).then(res=> res.json()).then(json => json);
     // })
-    // .catch(err => console.log("Error in fetchRestaurants(): %o", err));
+    // .catch(err => log(logPrefix,"Error in fetchRestaurants(): %o", err));
   }
 
   /*
@@ -81,7 +83,7 @@ export class DBHelper {
       var store = db.transaction(restaurantsCollection, 'readonly').objectStore(restaurantsCollection);
       return store.get(parseInt(id));
     })
-    .catch( err => console.log('Restaurant does not exist') );
+    .catch( err => log(logPrefix,'Restaurant does not exist') );
   }
 
   
@@ -90,7 +92,7 @@ export class DBHelper {
    */
   // static getAllRestaurantReviews() {
   //   return dbPromise.then(res => res.json())
-  //   .catch(err=>console.log(err));
+  //   .catch(err=>log(logPrefix,err));
   // }
   
   /**
@@ -98,16 +100,16 @@ export class DBHelper {
    * @param {number} restaurantId
    */
   static getRestaurantReviewsByRestaurant(restaurantId) {
-    console.log(`get restaurant reviews by restaurant_id ${restaurantId}`);
+    log(logPrefix,`get restaurant reviews by restaurant_id ${restaurantId}`);
     return dbPromise.then(db => db.transaction(reviewsCollection, 'readonly')
         .objectStore(reviewsCollection)
         .index('reviewsByRestaurant')
         .getAll(parseInt(restaurantId)))
         .then( revs => {
-          console.log('reviews from idb: %o', revs)
+          log(logPrefix,'reviews from idb: %o', revs)
           return revs;
         })
-        .catch(err => console.log(`getRestaurantReviewsByRestaurant(${restaurantId}): ${err}`));
+        .catch(err => log(logPrefix,`getRestaurantReviewsByRestaurant(${restaurantId}): ${err}`));
   }
   
   /**
@@ -222,7 +224,7 @@ export class DBHelper {
   //   }
     
   static addRestaurants(restaurants) {
-      console.log('addRestaurants: %o', restaurants);
+      log(logPrefix,'addRestaurants: %o', restaurants);
       dbPromise.then( db => {
         var tx = db.transaction(restaurantsCollection, 'readwrite');
         var store = tx.objectStore(restaurantsCollection);
@@ -245,7 +247,7 @@ export class DBHelper {
     }
 
     static addRestaurantReviewsforRestaurant(reviews) {
-      console.log("Put to indexedDB reviews: %o", reviews);
+      log(logPrefix,"Put to indexedDB reviews: %o", reviews);
       for( var key in reviews) {
         const review = reviews[key];
         dbPromise.then( db => {

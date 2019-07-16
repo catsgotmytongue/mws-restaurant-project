@@ -20,3 +20,7 @@ export function detectOnlineStatus() {
     console.log("We are online! :)");
   });
 }
+
+export function log(logPrefix, str, ...args) {
+  console.log(logPrefix+"::"+str, ...args);
+}

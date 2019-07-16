@@ -1,7 +1,9 @@
+import {log} from './commonFunctions';
 /**
  * Common api helper functions.
  */
 export class ApiHelper {
+  static get LogPrefix(){ return "[ApiHelper]"; }
   /**
    * Url of the api server
    */
@@ -13,7 +15,7 @@ export class ApiHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants() {
-    return fetch(`${ApiHelper.ApiUrl}/restaurants`).then(res=> res.json()).catch(err => console.log("Error in fetchRestaurants(): %o", err));
+    return fetch(`${ApiHelper.ApiUrl}/restaurants`).then(res=> res.json()).catch(err => log(ApiHelper.LogPrefix,"Error in fetchRestaurants(): %o", err));
   }
   
   /*
@@ -27,15 +29,15 @@ export class ApiHelper {
    * Fetch a restaurant by its ID. - /restaurants/<restaurant_id>
    */
   static fetchRestaurantById(id) {
-    console.log(`fetch restaurants by id ${id}`);
-    return fetch(`${ApiHelper.ApiUrl}/restaurants/${id}`).then( res => res.json()).catch( err => console.log('Restaurant failed to fetch: %o', err) );;
+    log(ApiHelper.LogPrefix,`fetch restaurants by id ${id}`);
+    return fetch(`${ApiHelper.ApiUrl}/restaurants/${id}`).then( res => res.json()).catch( err => log(ApiHelper.LogPrefix,'Restaurant failed to fetch: %o', err) );;
   }
   
   /*
    * Fetch all restaurant reviews - /reviews
    */
   static fetchAllRestaurantReviews() {
-    return fetch(`${ApiHelper.ApiUrl}/reviews`).then(res => res.json()).catch(err=>console.log(err));
+    return fetch(`${ApiHelper.ApiUrl}/reviews`).then(res => res.json()).catch(err=>log(ApiHelper.LogPrefix,err));
   }
   
   /**
@@ -43,9 +45,9 @@ export class ApiHelper {
    * @param {number} restaurantId
    */
   static fetchRestaurantReviewsByRestaurant(restaurantId) {
-    console.log(`fetch restaurant reviews by restaurant_id ${restaurantId}`);
+    log(ApiHelper.LogPrefix,`fetch restaurant reviews by restaurant_id ${restaurantId}`);
     return fetch(`${ApiHelper.ApiUrl}/reviews/?restaurant_id=${restaurantId}`).then(res => 
-      res.json()).catch(err => console.log(`fetchRestaurantReviewsByRestaurant(${restaurantId}): ${err}`));
+      res.json()).catch(err => log(ApiHelper.LogPrefix,`fetchRestaurantReviewsByRestaurant(${restaurantId}): ${err}`));
   }
 
   /**
@@ -61,7 +63,7 @@ export class ApiHelper {
    * @param {{restaurant_id: number, name: string, rating: number, comments: string}} review
    */
   static postRestaurantReview(review) {
-    console.log('post review %o', review);
+    log(ApiHelper.LogPrefix,'post review %o', review);
     return fetch(`${ApiHelper.ApiUrl}/reviews`, {method: "post"}).then(res => res.json())
   }
 
@@ -101,7 +103,7 @@ export class ApiHelper {
   static fetchRestaurantByCuisine(cuisine) {
     // Fetch all restaurants  with proper error handling
     return ApiHelper.fetchRestaurants().then(restaurants => restaurants.filter(r => r.cuisine_type == cuisine))
-    .catch(err => console.log('Error fetching restaurants by cuisine: %o', err));
+    .catch(err => log(ApiHelper.LogPrefix,'Error fetching restaurants by cuisine: %o', err));
   }
   
   /**
@@ -112,7 +114,7 @@ export class ApiHelper {
     // Fetch all restaurants
     return ApiHelper.fetchRestaurants()
     .then(restaurants => restaurants.filter(r => r.neighborhood == neighborhood))
-    .catch(err => console.log('Error fetching restaurants by neighborhood: %o', err));
+    .catch(err => log(ApiHelper.LogPrefix,'Error fetching restaurants by neighborhood: %o', err));
   }
   
   /**
@@ -133,7 +135,7 @@ export class ApiHelper {
       
       return results;
     })
-    .catch(err => console.log('Error with fetchRestaurantByCuisineAndNeighborhood: %o', err));
+    .catch(err => log(ApiHelper.LogPrefix,'Error with fetchRestaurantByCuisineAndNeighborhood: %o', err));
   }
   
   /**
@@ -145,7 +147,7 @@ export class ApiHelper {
       return restaurants.map((v, i) => restaurants[i].neighborhood)
       .filter((v, i, neighborhoods) => neighborhoods.indexOf(v) == i); 
     } )
-    .catch(err => console.log('error with fetchNeighborhoods: %o', err));
+    .catch(err => log(ApiHelper.LogPrefix,'error with fetchNeighborhoods: %o', err));
   }
   
   /**
@@ -156,6 +158,6 @@ export class ApiHelper {
     .then(restaurants => restaurants
       .map((v, i) => restaurants[i].cuisine_type)
       .filter((v, i, cuisines) => cuisines.indexOf(v) == i))
-      .catch(err => console.log('Error with fetchCuisines: %o', err));
+      .catch(err => log(ApiHelper.LogPrefix,'Error with fetchCuisines: %o', err));
   }
 }

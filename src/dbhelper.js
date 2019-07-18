@@ -125,7 +125,12 @@ export class DBHelper {
    * @param {{restaurant_id: number, name: string, rating: number, comments: string}} review
    */
   static addRestaurantReview(review) {
-    
+    return dbPromise.then( db => {
+      var tx = db.transaction(reviewsCollection, 'readwrite');
+      var store = tx.objectStore(reviewsCollection);
+      store.put(review);
+      return tx.done;
+    });
   }
 
   /**

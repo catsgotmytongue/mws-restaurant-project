@@ -60,11 +60,15 @@ export class ApiHelper {
 
   /**
    * POST a restaurant review - /reviews
-   * @param {{restaurant_id: number, name: string, rating: number, comments: string}} review
+   * @param {{
+   * restaurant_id: number, 
+   * name: string, 
+   * rating: number, 
+   * comments: string}} review
    */
   static postRestaurantReview(review) {
-    log(ApiHelper.LogPrefix,'post review %o', review);
-    return fetch(`${ApiHelper.ApiUrl}/reviews`, {method: "post"}).then(res => res.json())
+    log(ApiHelper.LogPrefix,'post review %o, stringified: %o', review, JSON.stringify(review));
+    return fetch(`${ApiHelper.ApiUrl}/reviews`, {method: "post", body: JSON.stringify(review)}).then(res => res.json())
   }
 
   /**

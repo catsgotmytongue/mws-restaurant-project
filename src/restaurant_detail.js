@@ -1,9 +1,11 @@
 import "./sass/restaurant-detail.scss";
 
-import {mapMarkerForRestaurant} from './commonFunctions';
+import {mapMarkerForRestaurant, log} from './commonFunctions';
 
 import {ApiHelper} from './apihelper';
 import {UrlHelper} from './urlHelper';
+const logPrefix='[restaurant_detail.js]';
+
 let restaurant;
 var map;
 
@@ -151,6 +153,7 @@ var createReviewHTML = (review) => {
 
   const date = document.createElement('p');
   date.className ="review_date";
+  log(logPrefix, "CREATED AT: %o", review.createdAt);
   date.innerHTML = new Date(review.createdAt).toDateString();
   date.tabIndex = 0;
   li.appendChild(date);
@@ -197,6 +200,19 @@ var getParameterByName = (name, url) => {
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-var saveReview = () => {
-  console.log("Save review: %o", arguments);
+function saveReview(event, form) {
+  event.preventDefault();
+  let data = new FormData(form);  debugger;
+  let entry = {restaurant_id: self.restaurant.id}; 
+  for(var pair of data.entries()) {
+    entry = {...entry, [pair[0].toString()]: pair[1]}; 
+  }
+
+  log(logPrefix, "Save review: %o, %o", arguments, entry);
+
+  ApiHelper.postRestaurantReview(entry).then(review => {
+    log(logPrefix, 'reviewPosted: %o', review);
+    self.restaurant.reviews.push(review);
+    fillReviewsHTML();
+  });
 }

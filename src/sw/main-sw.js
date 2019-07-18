@@ -2,7 +2,7 @@ import {DBHelper} from '../dbhelper.js';
 import {ApiHelper} from '../apihelper.js';
 import {UrlHelper} from '../urlHelper.js';
 
-const version = 5;
+const version = 30;
 
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 
@@ -69,7 +69,6 @@ self.addEventListener('activate', event => {
 
 // listen for requests
 self.addEventListener('fetch', event => {
-  //console.log("REQ: %o", event.request);
   
   var requestUrl = new URL(event.request.url);
 
@@ -122,51 +121,83 @@ function log(str, ...args) {
 
 
 async function fetchApiResponse(event, requestUrl) {
-  log("fetchApiResponse: %o, %o", requestUrl.href, apiUrl.href);
+  //log("fetchApiResponse: %o, %o", requestUrl.href, apiUrl.href);
   
-  if(requestUrl.href === apiUrl.href) {
-    log('handle promises with await!')
-    // handle /restaurants endpoint
-    let restaurants = await DBHelper.getRestaurants();
-    log('restaurants from db: %o', restaurants);
-    
-    if(restaurants && restaurants.length > 0)
-      return jsonResponse(restaurants);
+  if(event.request.method === "GET") {
+    if(requestUrl.href === apiUrl.href) {
+      //log('handle promises with await!')
+      // handle /restaurants endpoint
+      let restaurants = await DBHelper.getRestaurants();
+      log('restaurants from db: %o', restaurants);
       
-    const res = await fetch(event.request);
-    const clonedRes = res.clone();
-    restaurants = await clonedRes.json();
-    DBHelper.addRestaurants(restaurants);
+      if(restaurants && restaurants.length > 0)
+        return jsonResponse(restaurants);
+        
+      const res = await fetch(event.request);
+      const clonedRes = res.clone();
+      restaurants = await clonedRes.json();
+      DBHelper.addRestaurants(restaurants);
 
-    return res;
+      return res;
+    }
+
+    if(requestUrl.pathname.startsWith("/reviews")) {
+      const restaurantId = getParameterByName('restaurant_id', requestUrl.href);
+      log("fetchApiResponse: reviews for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
+      
+      let dbReviews = await DBHelper.getRestaurantReviewsByRestaurant(restaurantId);
+
+      event.waitUntil( 
+        fetch(event.request)
+          .then( res => res.clone().json())
+          .then( reviews => DBHelper.addRestaurantReviewsforRestaurant(reviews) ) 
+      );
+
+      return jsonResponse(dbReviews)
+    }
+
+    if(requestUrl.pathname.startsWith('/restaurants/')) {
+      const id = requestUrl.pathname.replace('/restaurants/', '');
+      log('try to add restaurant based on %o, %o', requestUrl.pathname, id);
+      let restaurant = await DBHelper.getRestaurantById(id);
+      if(restaurant)
+        return jsonResponse(restaurant);
+
+      const res = await ApiHelper.fetchRestaurantById(id);
+      restaurant = await res.clone().json();
+      DBHelper.addRestaurant(restaurant);
+      return res;
+    }
   }
 
-  if(requestUrl.pathname.startsWith("/reviews")) {
-    const restaurantId = getParameterByName('restaurant_id', requestUrl.href);
-    log("fetchApiResponse: reviews for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
-    
-    let reviews = await DBHelper.getRestaurantReviewsByRestaurant(restaurantId);
-    if(reviews && reviews.length > 0)
-      return jsonResponse(reviews);
-    
-    const res = await fetch(event.request);
-    const clonedRes = res.clone();
-    reviews = await clonedRes.json();
-    DBHelper.addRestaurantReviewsforRestaurant(reviews);
-    return res;
-  }
+  if(event.request.method === 'POST') {
+    log(`POST(${requestUrl.pathname})`)
+    if(requestUrl.pathname === "/reviews") {
+      var reqClone = event.request.clone();
+      var reqjson = (await reqClone.text());
+      var jobject = JSON.parse(reqjson);
 
-  if(requestUrl.pathname.startsWith('/restaurants/')) {
-    const id = requestUrl.pathname.replace('/restaurants/', '');
-    log('try to add restaurant based on %o, %o', requestUrl.pathname, id);
-    let restaurant = await DBHelper.getRestaurantById(id);
-    if(restaurant)
-      return jsonResponse(restaurant);
+                    // .split('&')
+                    // .map(d=>{var b = d.split('='); var f={}; f[b[0]] = b[1]; return f; })
+                    // .reduce( (acc, current) => ({...acc, ...current}) );
+      // var restaurantId = getParameterByName('id', requestUrl);
+      // var dataObj = {...reqjson/*, restaurant_id: restaurantId*/};
+      log("intercepted post: %o", {event, reqClone, reqjson, jobject});
 
-    const res = await ApiHelper.fetchRestaurantById(id);
-    restaurant = await res.clone().json();
-    DBHelper.addRestaurant(restaurant);
-    return res;
+      var revObj = await ApiHelper.postRestaurantReview(jobject).then( review => {
+        log('Posted review: %o', review);
+        DBHelper.addRestaurantReview(review).then(rev => log('review: %o', rev));
+        return review;
+      }).catch( err => {
+        log('Error in post %o', err)
+        
+        DBHelper.addRestaurantReview(jobject).then(rev => log('review: %o', rev));
+        return {...jobject, createdAt: Date.now()}
+      });
+
+      return jsonResponse(revObj);
+    }
+
   }
 
   log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);
@@ -175,7 +206,7 @@ async function fetchApiResponse(event, requestUrl) {
 }
 
 async function fetchSameOriginResponse(event, requestUrl) {
-  log('SameOriginFetch: %o', event);
+  //log('SameOriginFetch: %o', event);
 
   if(event.request.method === 'GET') {
     // handle root, when offline
@@ -193,27 +224,7 @@ async function fetchSameOriginResponse(event, requestUrl) {
     }
   }
 
-  if(event.request.method === 'POST') {
-    var reqClone = event.request.clone();
-    var reqjson = (await reqClone.text())
-                  .split('&')
-                  .map(d=>{var b = d.split('='); var f={}; f[b[0]] = b[1]; return f; })
-                  .reduce( (acc, current) => ({...acc, ...current}) );
-    var restaurantId = getParameterByName('id', requestUrl);
-    var dataObj = {...reqjson, restaurant_id: restaurantId};
-    log("intercepted post: %o, %o, ", event, reqClone, dataObj);
 
-    ApiHelper.postRestaurantReview(dataObj).then( review => {
-      log('Posted review: %o', review);
-    }).catch( err => {
-      log('Error in post %o', err)
-      //todo: store in indexedDB to try later ?
-
-    });
-
-    return jsonResponse(dataObj);
-
-  }
   // any other request return a cached response or fetch it
   return caches.match(event.request).then(response => 
     response || fetch(event.request) )

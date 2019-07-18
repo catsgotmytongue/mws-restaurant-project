@@ -71,8 +71,8 @@
 
       <h3 class="page-section">Add your own review</h3>
       <section id="new-review">
-        <form method="post">
-          
+        
+        <form onsubmit="saveReview(event, this)">
           <label for="newReviewName">Your Name</label>
           <input type="text" id="new-review-name" name="name"/>
           
@@ -80,7 +80,7 @@
           <input type="text" id="new-review-rating" name="rating"/>
           
           <label for="new-review-comments">Comments</label>
-          <textarea id="new-review-comment" name="comment"></textarea>
+          <textarea id="new-review-comment" name="comments"></textarea>
           
           <button type="submit">Save Review</button>
         </form>

@@ -2,7 +2,7 @@ import {DBHelper} from '../dbhelper.js';
 import {ApiHelper} from '../apihelper.js';
 import {UrlHelper} from '../urlHelper.js';
 
-const version = 30;
+const version = 36;
 
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 
@@ -15,6 +15,8 @@ const currentCaches = [
   currentStaticCacheName,
   currentImgCacheName
 ];
+
+let offlineReviewCounter = 9999;
 
 log(`Running sw.js version ${version}`);
 
@@ -153,7 +155,7 @@ async function fetchApiResponse(event, requestUrl) {
           .then( reviews => DBHelper.addRestaurantReviewsforRestaurant(reviews) ) 
       );
 
-      return jsonResponse(dbReviews)
+      return jsonResponse(dbReviews);
     }
 
     if(requestUrl.pathname.startsWith('/restaurants/')) {
@@ -189,10 +191,10 @@ async function fetchApiResponse(event, requestUrl) {
         DBHelper.addRestaurantReview(review).then(rev => log('review: %o', rev));
         return review;
       }).catch( err => {
-        log('Error in post %o', err)
-        
-        DBHelper.addRestaurantReview(jobject).then(rev => log('review: %o', rev));
-        return {...jobject, createdAt: Date.now()}
+        log('Error in post %o', err);
+        let offlineReview = {...jobject, createdAt: Date.now(), id: offlineReviewCounter--};
+        DBHelper.addRestaurantReview(offlineReview).then(rev => log('review: %o', rev));
+        return offlineReview;
       });
 
       return jsonResponse(revObj);

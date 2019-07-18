@@ -67,7 +67,7 @@ export class ApiHelper {
    * comments: string}} review
    */
   static postRestaurantReview(review) {
-    log(ApiHelper.LogPrefix,'post review %o, stringified: %o', review, JSON.stringify(review));
+    //log(ApiHelper.LogPrefix,'post review %o, stringified: %o', review, JSON.stringify(review));
     return fetch(`${ApiHelper.ApiUrl}/reviews`, {method: "post", body: JSON.stringify(review)}).then(res => res.json())
   }
 

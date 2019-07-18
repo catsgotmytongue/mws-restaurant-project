@@ -153,7 +153,6 @@ var createReviewHTML = (review) => {
 
   const date = document.createElement('p');
   date.className ="review_date";
-  log(logPrefix, "CREATED AT: %o", review.createdAt);
   date.innerHTML = new Date(review.createdAt).toDateString();
   date.tabIndex = 0;
   li.appendChild(date);
@@ -202,7 +201,7 @@ var getParameterByName = (name, url) => {
 
 function saveReview(event, form) {
   event.preventDefault();
-  let data = new FormData(form);  debugger;
+  let data = new FormData(form);
   let entry = {restaurant_id: self.restaurant.id}; 
   for(var pair of data.entries()) {
     entry = {...entry, [pair[0].toString()]: pair[1]}; 

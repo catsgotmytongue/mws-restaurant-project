@@ -6,13 +6,12 @@ Add a form to allow users to create their own reviews
     - user’s rating
     - comments they have
 - Submitting the form should update the server when the user is online.
+- the review should still be visible locally before it gets to the server
+- add functionality to defer updates until the user is connected 
+- If the user is not online, the app should notify the user that they are not connected, and save the users' data 
+  to submit when re-connected.
 
 Add functionality to mark a restaurant as a un/favorite
-
-
-Add functionality to defer updates until the user is connected 
-- If the user is not online, the app should notify the user that they are not connected, and save the users' data to submit when re-connected.
-- the review should still be visible locally before it gets to the server
 
 performance requirements using Lighthouse
 - Progressive Web App score >= 90

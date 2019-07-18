@@ -11,7 +11,8 @@ module.exports = {
         restaurant_detail: './src/restaurant_detail.js',
         dbhelper: './src/dbhelper.js',
         register_sw: './src/sw/register-sw.js',
-        sw: './src/sw/main-sw.js'
+        sw: './src/sw/main-sw.js',
+        todoApp: './src/todoApp.js'
     },
     resolve: {
         modules: ['node_modules']

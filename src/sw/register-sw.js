@@ -57,9 +57,23 @@ if('serviceWorker' in navigator) {
     registerServiceWorker("./sw.js");
   });
 
+  window.addEventListener('offline', function(event) {
+    log(logPrefix, 'online postMessage');
+    navigator.serviceWorker.controller.postMessage({action: "offline"})
+  });
+  
+  window.addEventListener('online', function(event) {
+    log(logPrefix, 'online postMessage');
+    navigator.serviceWorker.controller.postMessage({action: "online"})
+  });
+
   if ('SyncManager' in window) {
     navigator.serviceWorker.ready.then(function(reg) {
-      return reg.sync.register('tag-name');
+      if ('sync' in reg) {
+        return reg.sync.register('syncReviews');
+      }
+
+      return undefined;
     }).catch(function() {
       // system was unable to register for a sync,
       // this could be an OS-level restriction

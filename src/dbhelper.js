@@ -54,17 +54,6 @@ export class DBHelper {
       var store = db.transaction(dbName, 'readonly').objectStore(dbName);
       return store.getAll();
     });
-
-    // todo: handle this in service worker
-    // .then( restaurants => {
-    //   log(logPrefix,'[] from db: %o', restaurants);
-    //   if(restaurants && restaurants.length > 0)
-    //     return restaurants;
-
-    //   return fetch(`${DBHelper.ApiUrl}/restaurants`).then(res=> res.json());
-    //   // return restaurants || fetch(DBHelper.ApiUrl).then(res=> res.json()).then(json => json);
-    // })
-    // .catch(err => log(logPrefix,"Error in fetchRestaurants(): %o", err));
   }
 
   /*
@@ -85,15 +74,6 @@ export class DBHelper {
     })
     .catch( err => log(logPrefix,'Restaurant does not exist') );
   }
-
-  
-  /*
-   * Fetch all restaurant reviews - /reviews
-   */
-  // static getAllRestaurantReviews() {
-  //   return dbPromise.then(res => res.json())
-  //   .catch(err=>log(logPrefix,err));
-  // }
   
   /**
    * Fetch restaurant reviews by Restaurant ID - /reviews/?restaurant_id=<restaurant_id>
@@ -150,7 +130,26 @@ export class DBHelper {
    * @param {{name: string, rating: number, comments: string}} review 
    */
   static updateRestaurantReview(reviewId, review) {
+    log(logPrefix, '%o => %o', reviewId, review);
+    return dbPromise.then( db => {
+
     // todo: update a restaurant review in idb
+    var tx = db.transaction(reviewsCollection, 'readwrite');
+    var reviewsStore = tx.objectStore(reviewsCollection);
+    
+    return reviewsStore.openCursor().then(async cursor => {
+          while (cursor) {
+            const curReview = { ...cursor.value };
+            if(curReview.id === reviewId) {
+              cursor.update(review);
+              return tx.done;
+            }
+            cursor = await cursor.continue();
+          }
+          tx.done;
+      });
+    });
+
   }
 
   /**
@@ -160,73 +159,14 @@ export class DBHelper {
    * */
   static deleteRestaurantReview(reviewId) {
     //todo: delete restaurant from idb
+    log(logPrefix, "Delete: %o", reviewId);
+    return dbPromise.then(db => {
+      let tx = db.transaction(reviewsCollection, "readwrite");
+      let store = tx.objectStore(reviewsCollection);
+      store.delete(reviewId);
+      return tx.done;
+    });
   }
-    
-  // /**
-  //  * Fetch restaurants by a cuisine type with proper error handling.
-  //  * @param {string} cuisine
-  //  */
-  // static getRestaurantByCuisine(cuisine) {
-  //   // Fetch all restaurants  with proper error handling
-  //   return DBHelper.fetchRestaurants()
-  //   .then(restaurants => restaurants.filter(r => r.cuisine_type == cuisine))
-  //   .catch(err => null);
-  // }
-  
-  // /**
-  //  * Fetch restaurants by a neighborhood with proper error handling.
-  //  * @param {string} neighborhood
-  //  */
-  // static fetchRestaurantByNeighborhood(neighborhood) {
-  //   // Fetch all restaurants
-  //   return DBHelper.fetchRestaurants()
-  //   .then(restaurants => restaurants.filter(r => r.neighborhood == neighborhood))
-  //   .catch(err => null);
-  // }
-  
-  // /**
-  //  * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
-  //  * @param {string} cuisine
-  //  * @param {string} neighborhood
-  //  */
-  // static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood) {
-  //   return DBHelper.fetchRestaurants()
-  //   .then(restaurants => {
-  //     let results = restaurants;
-  //     if (cuisine != 'all') { // filter by cuisine
-  //       results = results.filter(r => r.cuisine_type == cuisine);
-  //     }
-  //     if (neighborhood != 'all') { // filter by neighborhood
-  //       results = results.filter(r => r.neighborhood == neighborhood);
-  //     }
-      
-  //     return results;
-  //   })
-  //   .catch(err => null);
-  // }
-  
-  // /**
-  //  * Fetch all neighborhoods with proper error handling.
-  //  */
-  // static fetchNeighborhoods() {
-  //   return DBHelper.fetchRestaurants()
-  //   .then(restaurants => {
-  //     return restaurants.map((v, i) => restaurants[i].neighborhood)
-  //     .filter((v, i, neighborhoods) => neighborhoods.indexOf(v) == i); 
-  //   } )
-  //   .catch(err => null);
-  // }
-  
-  // /**
-  //  * Fetch all cuisines with proper error handling.
-  //  */
-  // static fetchCuisines() {
-  //   return DBHelper.fetchRestaurants()
-  //   .then(restaurants => restaurants
-  //     .map((v, i) => restaurants[i].cuisine_type)
-  //     .filter((v, i, cuisines) => cuisines.indexOf(v) == i))
-  //     .catch(err => null);
-  //   }
     
   static addRestaurants(restaurants) {
       log(logPrefix,'addRestaurants: %o', restaurants);
@@ -263,4 +203,36 @@ export class DBHelper {
         });
       }
      }
+
+    static getReviewsForUpdate() {
+      //log(logPrefix, 'getReviewForUpload');
+      
+      return dbPromise.then(db => {
+        var tx = db.transaction(reviewsCollection);
+        var reviewsStore = tx.objectStore(reviewsCollection);
+        
+        let reviewsForUpdate = [];
+
+        return reviewsStore.openCursor().then(async cursor => {
+              while (cursor) {
+                //log(logPrefix, cursor.key, cursor.value);
+                const review = { ...cursor.value };
+                
+                if(typeof(review.id)==="string") {
+                  log(logPrefix, "review to upload: %o", review );
+                  reviewsForUpdate.push(review);
+                }
+
+                cursor = await cursor.continue();
+              }
+              tx.done;
+              //log(logPrefix, "Cursored reviews: %o", reviewsForUpdate);
+              return reviewsForUpdate;
+          });
+        })
+        .then(reviews => {
+          //log(logPrefix, "Reviews to return %o", reviews);
+          return reviews;
+        });
+    }
 }

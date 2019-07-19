@@ -207,10 +207,10 @@ function saveReview(event, form) {
     entry = {...entry, [pair[0].toString()]: pair[1]}; 
   }
 
-  log(logPrefix, "Save review: %o, %o", arguments, entry);
+  //log(logPrefix, "Save review: %o, %o", arguments, entry);
 
   ApiHelper.postRestaurantReview(entry).then(review => {
-    log(logPrefix, 'reviewPosted: %o', review);
+    //log(logPrefix, 'reviewPosted: %o', review);
     self.restaurant.reviews.push(review);
     fillReviewsHTML();
   });

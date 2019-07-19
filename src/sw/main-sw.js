@@ -1,8 +1,9 @@
 import {DBHelper} from '../dbhelper.js';
 import {ApiHelper} from '../apihelper.js';
 import {UrlHelper} from '../urlHelper.js';
+import nanoid from 'nanoid';
 
-const version = 36;
+const version = 77;
 
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 
@@ -101,15 +102,38 @@ self.addEventListener('fetch', event => {
 });
 
 // listen for service worker messages
-self.addEventListener('message', event => {
+self.addEventListener('message', async event => {
   if(event.data.action === 'skipWaiting') {
     self.skipWaiting();
+  }
+
+  if(event.data.action === 'online')  {
+    log("User Online");
+
+  }
+
+  if(event.data.action === 'offline') {
+    log("User Offline");
   }
 });
 
 // background sync API
-self.addEventListener('sync', event =>{
+self.addEventListener('sync', async event =>{
   log('sync event: %o', event);
+
+  if(event.tag === "syncReviews") {
+    let reviews = await DBHelper.getReviewsForUpdate();
+
+    for( var review of reviews) {
+      log('Review to post %o', review);
+      
+      ApiHelper.postRestaurantReview(review).then(
+        async rv => {
+          await DBHelper.deleteRestaurantReview(review.id);
+          await DBHelper.addRestaurantReview(rv);
+        });
+    }
+  }
 });
 
 function jsonResponse(obj) {
@@ -152,7 +176,9 @@ async function fetchApiResponse(event, requestUrl) {
       event.waitUntil( 
         fetch(event.request)
           .then( res => res.clone().json())
-          .then( reviews => DBHelper.addRestaurantReviewsforRestaurant(reviews) ) 
+          .then( reviews => {
+            log("adding restaurants to DB:%o", reviews);
+            return DBHelper.addRestaurantReviewsforRestaurant(reviews); }) 
       );
 
       return jsonResponse(dbReviews);
@@ -179,27 +205,27 @@ async function fetchApiResponse(event, requestUrl) {
       var reqjson = (await reqClone.text());
       var jobject = JSON.parse(reqjson);
 
-                    // .split('&')
-                    // .map(d=>{var b = d.split('='); var f={}; f[b[0]] = b[1]; return f; })
-                    // .reduce( (acc, current) => ({...acc, ...current}) );
-      // var restaurantId = getParameterByName('id', requestUrl);
-      // var dataObj = {...reqjson/*, restaurant_id: restaurantId*/};
       log("intercepted post: %o", {event, reqClone, reqjson, jobject});
 
       var revObj = await ApiHelper.postRestaurantReview(jobject).then( review => {
-        log('Posted review: %o', review);
+        log('Posted review(fetchResponse): %o', review);
         DBHelper.addRestaurantReview(review).then(rev => log('review: %o', rev));
         return review;
       }).catch( err => {
         log('Error in post %o', err);
-        let offlineReview = {...jobject, createdAt: Date.now(), id: offlineReviewCounter--};
+        let offlineReview = {...jobject, createdAt: Date.now(), id: nanoid(16)};
         DBHelper.addRestaurantReview(offlineReview).then(rev => log('review: %o', rev));
+        log('reg info: %o:: %o', self, registration);
+        if(self.registration.sync) {
+          let eventTag = 'syncReviews';
+          self.registration.sync.register(eventTag);
+          log('registered sync event %o', eventTag);
+        }
         return offlineReview;
       });
 
       return jsonResponse(revObj);
     }
-
   }
 
   log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);

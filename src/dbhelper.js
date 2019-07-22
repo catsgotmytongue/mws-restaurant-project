@@ -9,15 +9,26 @@ const reviewsCollection = "reviews";
 const objectStores = [restaurantsCollection, reviewsCollection];
 
 let dbPromise;
+
+function dbLog(str, ...args) {
+  if(DBHelper.loggingEnabled) {
+      log(logPrefix, str, ...args);
+  }
+}
 /**
  * Common database helper functions.
  */
 export class DBHelper {
-  static createDB() {
-    log(logPrefix,"OPEN DB");
-    dbPromise = openDB(dbName, dbVersion, {
-      upgrade(db, oldVersion, newVersion, transaction) {
-        log(logPrefix,`OpenDB: upgrade... ${{db, oldVersion, newVersion, transaction}}`);
+  static get loggingEnabled() { return false; }
+  static getDB() {
+    dbLog('getDB will create/open: %o', Boolean(dbPromise));
+    return dbPromise ? dbPromise : DBHelper.createDB();
+  }
+
+  static createDB() {    
+    return openDB(dbName, dbVersion, {
+        upgrade(db, oldVersion, newVersion, transaction) {
+        dbLog(`OpenDB: upgrade... ${{db, oldVersion, newVersion, transaction}}`);
   
         // ensure all object stores exist
         objectStores.forEach(objStore => {
@@ -27,7 +38,7 @@ export class DBHelper {
         });
         
         if(newVersion >= 22) {
-          log(logPrefix,"create reviews index, if it doesn't exist");
+          dbLog('create reviews index, if it doesn\'t exist');
           let reviewsStore = transaction.objectStore(reviewsCollection);
           if(!reviewsStore.indexNames.contains('reviewsByRestaurant')) {
             reviewsStore.createIndex('reviewsByRestaurant', 'restaurant_id');
@@ -35,22 +46,21 @@ export class DBHelper {
         }
       },
       blocked() {
-        log(logPrefix,`OpenDB: blocked...`);
+        dbLog(`OpenDB: blocked...`);
       },
       blocking() {
-        log(logPrefix,`OpenDB: blocking...`);
+        dbLog(`OpenDB: blocking...`);
       }
     });
-
-    return dbPromise;
   }
+  
 
   /**
    * Fetch all restaurants.
    */
   static getRestaurants() {
-    log(logPrefix,'getRestaurants...')
-    return dbPromise.then(db => {
+    dbLog('getRestaurants...')
+    return DBHelper.getDB().then(db => {
       var store = db.transaction(dbName, 'readonly').objectStore(dbName);
       return store.getAll();
     });
@@ -68,11 +78,11 @@ export class DBHelper {
    * Fetch a restaurant by its ID. - /restaurants/<restaurant_id>
    */
   static getRestaurantById(id) {
-    return dbPromise.then( db => {
+    return DBHelper.getDB().then( db => {
       var store = db.transaction(restaurantsCollection, 'readonly').objectStore(restaurantsCollection);
       return store.get(parseInt(id));
     })
-    .catch( err => log(logPrefix,'Restaurant does not exist') );
+    .catch( err => dbLog('Restaurant does not exist') );
   }
   
   /**
@@ -80,16 +90,16 @@ export class DBHelper {
    * @param {number} restaurantId
    */
   static getRestaurantReviewsByRestaurant(restaurantId) {
-    log(logPrefix,`get restaurant reviews by restaurant_id ${restaurantId}`);
-    return dbPromise.then(db => db.transaction(reviewsCollection, 'readonly')
+    dbLog(`get restaurant reviews by restaurant_id ${restaurantId}`);
+    return DBHelper.getDB().then(db => db.transaction(reviewsCollection, 'readonly')
         .objectStore(reviewsCollection)
         .index('reviewsByRestaurant')
         .getAll(parseInt(restaurantId)))
         .then( revs => {
-          log(logPrefix,'reviews from idb: %o', revs)
+          dbLog('reviews from idb: %o', revs)
           return revs;
         })
-        .catch(err => log(logPrefix,`getRestaurantReviewsByRestaurant(${restaurantId}): ${err}`));
+        .catch(err => dbLog(`getRestaurantReviewsByRestaurant(${restaurantId}): ${err}`));
   }
   
   /**
@@ -105,7 +115,7 @@ export class DBHelper {
    * @param {{restaurant_id: number, name: string, rating: number, comments: string}} review
    */
   static addRestaurantReview(review) {
-    return dbPromise.then( db => {
+    return DBHelper.getDB().then( db => {
       var tx = db.transaction(reviewsCollection, 'readwrite');
       var store = tx.objectStore(reviewsCollection);
       store.put(review);
@@ -130,8 +140,8 @@ export class DBHelper {
    * @param {{name: string, rating: number, comments: string}} review 
    */
   static updateRestaurantReview(reviewId, review) {
-    log(logPrefix, '%o => %o', reviewId, review);
-    return dbPromise.then( db => {
+    dbLog('%o => %o', reviewId, review);
+    return DBHelper.getDB().then( db => {
 
     // todo: update a restaurant review in idb
     var tx = db.transaction(reviewsCollection, 'readwrite');
@@ -159,8 +169,8 @@ export class DBHelper {
    * */
   static deleteRestaurantReview(reviewId) {
     //todo: delete restaurant from idb
-    log(logPrefix, "Delete: %o", reviewId);
-    return dbPromise.then(db => {
+    dbLog("Delete: %o", reviewId);
+    return DBHelper.getDB().then(db => {
       let tx = db.transaction(reviewsCollection, "readwrite");
       let store = tx.objectStore(reviewsCollection);
       store.delete(reviewId);
@@ -169,8 +179,8 @@ export class DBHelper {
   }
     
   static addRestaurants(restaurants) {
-      log(logPrefix,'addRestaurants: %o', restaurants);
-      dbPromise.then( db => {
+      dbLog('addRestaurants: %o', restaurants);
+      DBHelper.getDB().then( db => {
         var tx = db.transaction(restaurantsCollection, 'readwrite');
         var store = tx.objectStore(restaurantsCollection);
         for( var key in restaurants) {
@@ -183,7 +193,7 @@ export class DBHelper {
     }
 
     static addRestaurant(restaurant) {
-      return dbPromise.then( db => {
+      return DBHelper.getDB().then( db => {
         var tx = db.transaction(restaurantsCollection, 'readwrite');
         var store = tx.objectStore(restaurantsCollection);
         store.put(restaurant);
@@ -192,10 +202,10 @@ export class DBHelper {
     }
 
     static addRestaurantReviewsforRestaurant(reviews) {
-      log(logPrefix,"Put to indexedDB reviews: %o", reviews);
+      dbLog("Put to indexedDB reviews: %o", reviews);
       for( var key in reviews) {
         const review = reviews[key];
-        dbPromise.then( db => {
+        DBHelper.getDB().then( db => {
           var tx = db.transaction(reviewsCollection, 'readwrite');
           var store = tx.objectStore(reviewsCollection);
           store.put(review);
@@ -207,7 +217,7 @@ export class DBHelper {
     static getReviewsForUpdate() {
       //log(logPrefix, 'getReviewForUpload');
       
-      return dbPromise.then(db => {
+      return DBHelper.getDB().then(db => {
         var tx = db.transaction(reviewsCollection);
         var reviewsStore = tx.objectStore(reviewsCollection);
         
@@ -219,19 +229,19 @@ export class DBHelper {
                 const review = { ...cursor.value };
                 
                 if(typeof(review.id)==="string") {
-                  log(logPrefix, "review to upload: %o", review );
+                  dbLog("review to upload: %o", review );
                   reviewsForUpdate.push(review);
                 }
 
                 cursor = await cursor.continue();
               }
               tx.done;
-              //log(logPrefix, "Cursored reviews: %o", reviewsForUpdate);
+              //dbLog("Cursored reviews: %o", reviewsForUpdate);
               return reviewsForUpdate;
           });
         })
         .then(reviews => {
-          //log(logPrefix, "Reviews to return %o", reviews);
+          //dbLog("Reviews to return %o", reviews);
           return reviews;
         });
     }

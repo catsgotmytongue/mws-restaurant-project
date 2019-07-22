@@ -3,7 +3,8 @@ import "./sass/restaurant-list.scss";
 import { ApiHelper } from './apihelper';
 import { UrlHelper } from './urlHelper';
 import { mapMarkerForRestaurant, detectOnlineStatus, log } from './commonFunctions';
-
+const currentPage = window.location.href;
+let updateInterval = 5000;
 let logPrefix = '[main.js]';
 let restaurants,
   neighborhoods,
@@ -13,7 +14,7 @@ var markers = []
 /**
  * Initialize Google map, called from HTML.
  */
-window.initMap = function() {
+window.initMap = async function() {
    let loc = {
      lat: 40.722216,
      lng: -73.987501
@@ -24,17 +25,39 @@ window.initMap = function() {
      scrollwheel: false
    });
    updateRestaurants();
+   
+   requestAnimationFrame(await update);
  }
+
+ let lastUpdateTime = 0;
+async function update(currentTime) {
+
+  // time our animation frame and animate only while online
+  if(navigator.onLine && lastUpdateTime == 0 || currentTime-lastUpdateTime >= updateInterval) {
+    log(logPrefix, "update: %o", currentTime);
+    
+    try {
+      updateRestaurants(false);
+      lastUpdateTime = currentTime;
+    } catch(err) {
+      log(logPrefix, 'Update Error: %o', err);
+    }
+  }
+
+  // loop forever to keep html up to date (unless we leave the page)
+  if(currentPage === window.location.href) {
+    requestAnimationFrame(await update);
+  }
+}
+
  window.toggleFavorite = toggleFavorite;
  window.updateRestaurants = updateRestaurants;
 
  window.addEventListener('offline', function(event) {
-  log(logPrefix,"Index: We are offline! :(");
   window.document.querySelector('.network-indicator').classList.add('offline');
 });
 
 window.addEventListener('online', function(event) {
-  log(logPrefix,"Index: We are online! :)");
   window.document.querySelector('.network-indicator').classList.remove('offline');
 
 });
@@ -99,7 +122,7 @@ export var fillCuisinesHTML = (cuisines = self.cuisines) => {
 /**
  * Update page and map for current restaurants.
  */
-export function updateRestaurants() {
+export function updateRestaurants(withReset = true) {
   const cSelect = document.getElementById('cuisines-select');
   const nSelect = document.getElementById('neighborhoods-select');
 
@@ -111,7 +134,10 @@ export function updateRestaurants() {
 
   ApiHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood)
   .then(restaurants => {
-    resetRestaurants(restaurants);
+    if(withReset) {
+      resetRestaurants(restaurants);
+      addMarkersToMap();
+    }
     fillRestaurantsHTML();
   })
   .catch(error => console.error(error) )
@@ -139,10 +165,11 @@ export var resetRestaurants = (restaurants) => {
  */
 export var fillRestaurantsHTML = (restaurants = self.restaurants) => {
   const ul = document.getElementById('restaurants-list');
+  ul.innerHTML = '';
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
-  addMarkersToMap();
+
 }
 
 /**

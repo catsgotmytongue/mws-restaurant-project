@@ -3,6 +3,7 @@ const cleanWebPackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin'); 
 const CopyPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const siteTitle = 'Restaurant Reviews 3';
 
 module.exports = {
     mode: 'development',
@@ -46,8 +47,18 @@ module.exports = {
     plugins: [
         new cleanWebPackPlugin.CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            title: 'Restaurant Reviews 3',
+            title: siteTitle,
             template: './src/index.html',
+            inject: false,
+            minify: {
+                removeComments: true,
+                collapseWhitespace: false
+            }
+        }),        
+        new HtmlWebpackPlugin({
+            title: siteTitle,
+            filename: 'restaurant.html',
+            template: './src/restaurant.html',
             inject: false,
             minify: {
                 removeComments: true,

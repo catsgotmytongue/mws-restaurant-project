@@ -144,7 +144,7 @@ nav {
 
 /* ====================== Map ====================== */
 #map {
-  height: 25vh;
+  height: 20vh;
   width: 100%;
   background-color: #ccc;
 }
@@ -273,7 +273,7 @@ nav {
 
   #map {
     background-color: #ccc;
-    height: 100%;
+    height: 146px;
     width: 100%;
   }
 
@@ -308,8 +308,8 @@ nav {
 #restaurant-address {
   font-size: 12pt;
   margin: 10px 0px;
-  grid-row: 4;
-    grid-column: 1/-1;
+  // grid-row: 5;
+  grid-column: 1/-1;
 }
 
 #restaurant-cuisine {
@@ -323,8 +323,8 @@ nav {
   text-align: center;
   text-transform: uppercase;
   // width: 90%;
-  grid-row: 3;
-    grid-column: 1/-1;
+  // grid-row: 4;
+  grid-column: 1/-1;
 }
 
 #restaurant-hours {

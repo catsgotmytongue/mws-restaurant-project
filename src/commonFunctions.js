@@ -24,3 +24,20 @@ export function detectOnlineStatus() {
 export function log(logPrefix, str, ...args) {
   console.log(logPrefix+"::"+str, ...args);
 }
+
+/**
+ * Get a parameter by name from page URL.
+ */
+export function getParameterByName(name, url) {
+  if(!url)
+    throw("url is undefined");
+
+  name = name.replace(/[\[\]]/g, '\\$&');
+  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
+    results = regex.exec(url);
+  if (!results)
+    return null;
+  if (!results[2])
+    return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}

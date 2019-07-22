@@ -1,20 +1,26 @@
 import "./sass/restaurant-detail.scss";
 
-import {mapMarkerForRestaurant, log} from './commonFunctions';
+import {mapMarkerForRestaurant, log, getParameterByName} from './commonFunctions';
 
 import {ApiHelper} from './apihelper';
 import {UrlHelper} from './urlHelper';
+import { DBHelper } from "./dbhelper";
 const logPrefix='[restaurant_detail.js]';
+
+// update every n milliseconds
+const updateInterval = 5000;
 
 let restaurant;
 var map;
 
+const currentPage = window.location.href;
+
 /**
  * Initialize Google map, called from HTML.
  */
-window.initMap = function() {
+window.initMap = async function() {
   fetchRestaurantFromURL()
-  .then( restaurant => {
+  .then( async restaurant => {
     self.map = new google.maps.Map(document.getElementById('map'), {
         zoom: 16,
         center: restaurant.latlng,
@@ -22,8 +28,32 @@ window.initMap = function() {
       });
       fillBreadcrumb();
       mapMarkerForRestaurant(self.restaurant, self.map);
+      fillRestaurantHTML(restaurant);
+      requestAnimationFrame(await update);
   })
   .catch( err => console.error(err) );
+}
+
+let lastUpdateTime = 0;
+async function update(currentTime) {
+
+  // time our animation frame and animate only while online
+  if(navigator.onLine && lastUpdateTime == 0 || currentTime-lastUpdateTime >= updateInterval) {
+    log(logPrefix, "update: %o", currentTime);
+    
+    try {
+      let restaurant = await fetchRestaurantFromURL();
+      fillRestaurantHTML(restaurant);
+      lastUpdateTime = currentTime;
+    } catch(err) {
+      log(logPrefix, 'Update Error: %o', err);
+    }
+  }
+
+  // loop forever to keep html up to date (unless we leave the page)
+  if(currentPage === window.location.href) {
+    requestAnimationFrame(await update);
+  }
 }
 
 window.saveReview = saveReview;
@@ -33,12 +63,7 @@ window.saveReview = saveReview;
  */
 var fetchRestaurantFromURL = () => {
   return new Promise((resolve, reject) => {
-    if (self.restaurant) { // restaurant already fetched!
-      resolve(self.restaurant);
-      return;
-    }
-
-    const id = getParameterByName('id');
+    const id = getParameterByName('id', window.location.href);
     if (!id) { // no id found in URL
       reject('No restaurant id in URL');
     } else {
@@ -51,11 +76,9 @@ var fetchRestaurantFromURL = () => {
           self.restaurant.reviews = reviews;
 
           if (!restaurant) {
-            console.error(error);
             return;
           }
 
-          fillRestaurantHTML(restaurant);
           return resolve(restaurant);
         });
     });
@@ -101,19 +124,12 @@ var getFavoriteIcon = (is_favorite) => `<i class="fa fa-heart ${is_favorite === 
  */
 var fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
+
+  let sched = '';
   for (let key in operatingHours) {
-    const row = document.createElement('tr');
-
-    const day = document.createElement('td');
-    day.innerHTML = key;
-    row.appendChild(day);
-
-    const time = document.createElement('td');
-    time.innerHTML = operatingHours[key];
-    row.appendChild(time);
-
-    hours.appendChild(row);
+    sched += `<tr><td>${key}</td><td>${operatingHours[key]}</td></tr>`;
   }
+  hours.innerHTML = sched;
 }
 
 /**
@@ -121,10 +137,6 @@ var fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours)
  */
 var fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
-  const title = document.createElement('h3');
-  title.innerHTML = 'Reviews';
-  title.tabIndex = 0;
-  container.appendChild(title);
 
   if (!reviews) {
     const noReviews = document.createElement('p');
@@ -133,6 +145,7 @@ var fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     return;
   }
   const ul = document.getElementById('reviews-list');
+  ul.innerHTML = "";
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
@@ -183,22 +196,6 @@ var fillBreadcrumb = (restaurant=self.restaurant) => {
   breadcrumb.appendChild(li);
 }
 
-/**
- * Get a parameter by name from page URL.
- */
-var getParameterByName = (name, url) => {
-  if (!url)
-    url = window.location.href;
-  name = name.replace(/[\[\]]/g, '\\$&');
-  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
-    results = regex.exec(url);
-  if (!results)
-    return null;
-  if (!results[2])
-    return '';
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
-
 function saveReview(event, form) {
   event.preventDefault();
   let data = new FormData(form);
@@ -207,11 +204,8 @@ function saveReview(event, form) {
     entry = {...entry, [pair[0].toString()]: pair[1]}; 
   }
 
-  //log(logPrefix, "Save review: %o, %o", arguments, entry);
-
   ApiHelper.postRestaurantReview(entry).then(review => {
-    //log(logPrefix, 'reviewPosted: %o', review);
     self.restaurant.reviews.push(review);
-    fillReviewsHTML();
+    form.reset();
   });
 }

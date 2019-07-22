@@ -1,9 +1,10 @@
 import {DBHelper} from '../dbhelper.js';
 import {ApiHelper} from '../apihelper.js';
 import {UrlHelper} from '../urlHelper.js';
+import {getParameterByName} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 77;
+const version = 14;
 
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 
@@ -66,7 +67,7 @@ self.addEventListener('activate', event => {
   // reccomended creation of DB during SW activation event: 
   // https://developers.google.com/web/ilt/pwa/live-data-in-the-service-worker
   event.waitUntil(
-    DBHelper.createDB()
+    DBHelper.getDB()
   );
 });
 
@@ -228,6 +229,19 @@ async function fetchApiResponse(event, requestUrl) {
     }
   }
 
+  if(event.request.method === 'PUT') {
+    log(`PUT(${requestUrl.href})`);
+
+    if(/.*is_favorite=.*/.test(requestUrl.search)) {
+      let isFavorite = Boolean(getParameterByName('is_favorite', requestUrl.search));
+      log('Set favorite: ', isFavorite);
+
+      return fetch(event.request).catch(err => {
+        log(`error marking favorite: ${requestUrl.pathname}`);
+      });
+    }
+  }
+
   log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);
   let response = await caches.match(event.request);
   return response || fetch(event.request).catch(reason => log("fetchApiResponse::Cache miss: ",reason)); 
@@ -288,21 +302,4 @@ function serveAsset(request) {
       }) 
     )
   );
-}
-
-/**
- * Get a parameter by name from page URL.
- */
-var getParameterByName = (name, url) => {
-  if(!url)
-    throw("url is undefined");
-
-  name = name.replace(/[\[\]]/g, '\\$&');
-  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
-    results = regex.exec(url);
-  if (!results)
-    return null;
-  if (!results[2])
-    return '';
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }

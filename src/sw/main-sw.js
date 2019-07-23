@@ -4,10 +4,9 @@ import {UrlHelper} from '../urlHelper.js';
 import {getParameterByName} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 18;
-
+const version = 52;
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
-
+const loggingEnabled = true;
 const cacheNamePrefix = 'restaurant-';
 const staticCacheName = `${cacheNamePrefix}static-cache-v`;
 const imgCacheName    = `${cacheNamePrefix}image-cache-v`;
@@ -142,7 +141,9 @@ function jsonResponse(obj) {
 });
 }
 function log(str, ...args) {
-  console.log("[Service Worker]::"+str, ...args);
+  if(loggingEnabled) {
+    console.log("[Service Worker]::"+str, ...args);
+  }
 }
 
 
@@ -184,17 +185,19 @@ async function fetchApiResponse(event, requestUrl) {
       return jsonResponse(dbReviews);
     }
 
-    if(requestUrl.pathname.startsWith('/restaurants/')) {
-      const id = requestUrl.pathname.replace('/restaurants/', '');
-      log('try to add restaurant based on %o, %o', requestUrl.pathname, id);
+    if(/.*\/restaurants\/\d+\//.test(requestUrl.href)) {
+      let re = /.*\/restaurants\/(?<restaurantId>\d+)\//;
+      let result = re.exec(requestUrl.href);
+      let id = result.groups.restaurantId
+      
       let restaurant = await DBHelper.getRestaurantById(id);
       if(restaurant)
         return jsonResponse(restaurant);
 
-      const res = await ApiHelper.fetchRestaurantById(id);
-      restaurant = await res.clone().json();
-      DBHelper.addRestaurant(restaurant);
-      return res;
+      const restaurantFromApi = await ApiHelper.fetchRestaurantById(id);
+      log('res: %o', restaurantFromApi);
+      DBHelper.addRestaurant(restaurantFromApi);
+      return restaurantFromApi;
     }
   }
 

@@ -2,7 +2,7 @@ import "./sass/restaurant-list.scss";
 
 import { ApiHelper } from './apihelper';
 import { UrlHelper } from './urlHelper';
-import { mapMarkerForRestaurant, detectOnlineStatus, log, trueBool } from './commonFunctions';
+import { mapMarkerForRestaurant, detectOnlineStatus, log, trueBool, setNetworkIndicator } from './commonFunctions';
 const currentPage = window.location.href;
 let updateInterval = 5000;
 let logPrefix = '[main.js]';
@@ -25,7 +25,7 @@ window.initMap = async function() {
      scrollwheel: false
    });
    updateRestaurants();
-   
+   setNetworkIndicator();
    requestAnimationFrame(await update);
  }
 
@@ -67,6 +67,7 @@ window.addEventListener('online', function(event) {
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
+  setNetworkIndicator();
 });
 
 /**
@@ -192,7 +193,7 @@ export var createRestaurantHTML = (restaurant) => {
       <p tabindex="0">${restaurant.address}</p>
       
     </figcaption>
-    <a href="javascript:toggleFavorite(${restaurant.id}, ${restaurant.is_favorite})" class="make-favorite-link">
+    <a href="javascript:toggleFavorite(${restaurant.id}, ${restaurant.is_favorite})" class="make-favorite-link" aria-label="favorite ${restaurant.name}">
       ${getFavoriteIcon(restaurant.id, restaurant.is_favorite)}
     </a>
   </figure>
@@ -203,7 +204,7 @@ export var createRestaurantHTML = (restaurant) => {
 }
 
 var getFavoriteIcon = (restaurantId, is_favorite) => {
-  log(logPrefix, `restaurantID: ${restaurantId}, favoriteVal: %o`, is_favorite);
+  //log(logPrefix, `restaurantID: ${restaurantId}, favoriteVal: %o`, is_favorite);
   let fav = trueBool(is_favorite);
   return `<i id="fav-${restaurantId}" class="fa fa-heart ${fav?"favorite":""} favorite-icon"></i>`;
 }

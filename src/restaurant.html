@@ -1,16 +1,19 @@
+<!DOCTYPE html>
 <html lang="en">
-
   <head>
     <meta
       name="viewport"
       content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#317EFB"/>
     <meta charset="utf-8">
+    <link rel="apple-touch-icon" href="/img/touch-icon-iphone.png">
     <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css">
     <link rel="stylesheet" href="css/restaurant_detail.css" type="text/css">
     <link rel="manifest" href="/manifest.json">
     <title><%= htmlWebpackPlugin.options.title %> - Details</title>
   </head>
   <body class="inside">
+    <div class="network-indicator">Working Offline, content may be out of date until online again.</div>
     <header>
       <nav aria-label="Breadcrumb">
         <h1><a href="/">Restaurant Reviews</a></h1>
@@ -57,16 +60,21 @@
         <h3 class="page-section">Add your own review</h3>
         
         <form onsubmit="saveReview(event, this)">
-          <label for="newReviewName">Your Name</label>
-          <input type="text" id="new-review-name" name="name"/>
+          <label for="new-review-name">Your Name
+            
+          </label><input type="text" id="new-review-name" name="name"/>
           
-          <label for="new-review-rating">What would you rate this restaurant ?</label>
-          <input type="text" id="new-review-rating" name="rating"/>
           
-          <label for="new-review-comments">Comments</label>
-          <textarea id="new-review-comment" name="comments"></textarea>
+          <label for="new-review-rating">What would you rate this restaurant ?
+            
+          </label><input type="text" id="new-review-rating" name="rating"/>
           
-          <button type="submit">Save Review</button>
+          
+          <label for="new-review-comment">Comments
+            
+          </label><textarea id="new-review-comment" name="comments"></textarea>
+                    
+          <button type="submit" aria-label="Save my review of this restaurant">Save Review</button>
         </form>
       </section>
     </main>

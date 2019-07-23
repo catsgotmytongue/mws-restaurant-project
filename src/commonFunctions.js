@@ -24,6 +24,14 @@ export function detectOnlineStatus() {
   });
 }
 
+export function setNetworkIndicator() {
+  if(!navigator.onLine) {
+    window.document.querySelector('.network-indicator').classList.add('offline');
+  } else {
+    window.document.querySelector('.network-indicator').classList.remove('offline');
+  }
+}
+
 export function log(logPrefix, str, ...args) {
   console.log(logPrefix+"::"+str, ...args);
 }

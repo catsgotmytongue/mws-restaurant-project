@@ -1,6 +1,6 @@
 import "./sass/restaurant-detail.scss";
 
-import {mapMarkerForRestaurant, log, getParameterByName} from './commonFunctions';
+import {mapMarkerForRestaurant, log, getParameterByName, setNetworkIndicator} from './commonFunctions';
 
 import {ApiHelper} from './apihelper';
 import {UrlHelper} from './urlHelper';
@@ -19,6 +19,7 @@ const currentPage = window.location.href;
  * Initialize Google map, called from HTML.
  */
 window.initMap = async function() {
+  setNetworkIndicator();
   fetchRestaurantFromURL()
   .then( async restaurant => {
     self.map = new google.maps.Map(document.getElementById('map'), {
@@ -39,7 +40,7 @@ async function update(currentTime) {
 
   // time our animation frame and animate only while online
   if(navigator.onLine && lastUpdateTime == 0 || currentTime-lastUpdateTime >= updateInterval) {
-    log(logPrefix, "update: %o", currentTime);
+    //log(logPrefix, "update: %o", currentTime);
     
     try {
       let restaurant = await fetchRestaurantFromURL();
@@ -57,6 +58,15 @@ async function update(currentTime) {
 }
 
 window.saveReview = saveReview;
+
+window.addEventListener('offline', function(event) {
+  window.document.querySelector('.network-indicator').classList.add('offline');
+});
+
+window.addEventListener('online', function(event) {
+  window.document.querySelector('.network-indicator').classList.remove('offline');
+
+});
 
 /**
  * Get current restaurant from page URL.

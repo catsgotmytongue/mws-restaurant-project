@@ -29,7 +29,7 @@ export class ApiHelper {
    * Fetch a restaurant by its ID. - /restaurants/<restaurant_id>
    */
   static fetchRestaurantById(id) {
-    log(ApiHelper.LogPrefix,`fetch restaurants by id ${id}`);
+    //log(ApiHelper.LogPrefix,`fetch restaurants by id ${id}`);
     return fetch(`${ApiHelper.ApiUrl}/restaurants/${id}`).then( res => res.json()).catch( err => log(ApiHelper.LogPrefix,'Restaurant failed to fetch: %o', err) );;
   }
   
@@ -45,7 +45,7 @@ export class ApiHelper {
    * @param {number} restaurantId
    */
   static fetchRestaurantReviewsByRestaurant(restaurantId) {
-    log(ApiHelper.LogPrefix,`fetch restaurant reviews by restaurant_id ${restaurantId}`);
+    //log(ApiHelper.LogPrefix,`fetch restaurant reviews by restaurant_id ${restaurantId}`);
     return fetch(`${ApiHelper.ApiUrl}/reviews/?restaurant_id=${restaurantId}`).then(res => 
       res.json()).catch(err => log(ApiHelper.LogPrefix,`fetchRestaurantReviewsByRestaurant(${restaurantId}): ${err}`));
   }

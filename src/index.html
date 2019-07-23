@@ -1,11 +1,12 @@
+<!DOCTYPE html>
 <html lang="en">
 
   <head>
     <meta
       name="viewport"
       content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#317EFB"/>
     <meta charset="utf-8">
-
     <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css">
     <link rel="stylesheet" href="css/restaurant_list.css">
     <link rel="manifest" href="/manifest.json">
@@ -30,20 +31,23 @@
       <section>
         <div class="filter-options">
           <h2>Filter Results</h2>
-          <label for="neighborhoods">Choose Your Neighborhood</label>
+          <label for="neighborhoods">Choose Your Neighborhood
           <select
             id="neighborhoods-select"
             name="neighborhoods"
             onchange="updateRestaurants()">
             <option value="all">All Neighborhoods</option>
           </select>
-          <label for="cuisines">Choose Cuisine</label>
-          <select
+          </label>
+
+          <label for="cuisines">Choose Cuisine
+            <select
             id="cuisines-select"
             name="cuisines"
             onchange="updateRestaurants()">
             <option value="all">All Cuisines</option>
-          </select>
+          </select></label>
+          
         </div>
         <ul id="restaurants-list"></ul>
       </section>

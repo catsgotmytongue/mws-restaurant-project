@@ -77,9 +77,9 @@ export class DBHelper {
   /**
    * Fetch a restaurant by its ID. - /restaurants/<restaurant_id>
    */
-  static getRestaurantById(id) {
+  static getRestaurantById(id, mode = 'readonly') {
     return DBHelper.getDB().then( db => {
-      var store = db.transaction(restaurantsCollection, 'readonly').objectStore(restaurantsCollection);
+      var store = db.transaction(restaurantsCollection, mode).objectStore(restaurantsCollection);
       return store.get(parseInt(id));
     })
     .catch( err => dbLog('Restaurant does not exist') );
@@ -131,6 +131,16 @@ export class DBHelper {
    */
   static setFavoriteRestaurant(restaurantId, isFavorite) {
     //todo: favorite a restaurant in idb and keep track of which restaurants changed
+    let key = parseInt(restaurantId);
+    //dbLog('updating favorite on %o to %o', key, isFavorite);
+    return DBHelper.getDB().then(async db => {
+      let tx = db.transaction(restaurantsCollection, 'readwrite')
+      let store = tx.objectStore(restaurantsCollection);
+      let restaurant = await store.get(key);
+      restaurant.is_favorite = isFavorite;
+      store.put(restaurant); // key implicit in record being put
+      return tx.done;
+    });
   }
 
   /**

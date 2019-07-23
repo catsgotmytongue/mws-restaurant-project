@@ -2,7 +2,7 @@ import "./sass/restaurant-list.scss";
 
 import { ApiHelper } from './apihelper';
 import { UrlHelper } from './urlHelper';
-import { mapMarkerForRestaurant, detectOnlineStatus, log } from './commonFunctions';
+import { mapMarkerForRestaurant, detectOnlineStatus, log, trueBool } from './commonFunctions';
 const currentPage = window.location.href;
 let updateInterval = 5000;
 let logPrefix = '[main.js]';
@@ -138,7 +138,7 @@ export function updateRestaurants(withReset = true) {
       resetRestaurants(restaurants);
       addMarkersToMap();
     }
-    fillRestaurantsHTML();
+    fillRestaurantsHTML(restaurants);
   })
   .catch(error => console.error(error) )
 }
@@ -166,6 +166,7 @@ export var resetRestaurants = (restaurants) => {
 export var fillRestaurantsHTML = (restaurants = self.restaurants) => {
   const ul = document.getElementById('restaurants-list');
   ul.innerHTML = '';
+  //log(logPrefix, 'restaurants in fillRestaurantsHTML: %o', restaurants);
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
@@ -191,35 +192,40 @@ export var createRestaurantHTML = (restaurant) => {
       <p tabindex="0">${restaurant.address}</p>
       
     </figcaption>
-    <a href="javascript:toggleFavorite(${restaurant.id}, ${restaurant.is_favorite}, 'fav-${restaurant.id}')" class="make-favorite-link">
+    <a href="javascript:toggleFavorite(${restaurant.id}, ${restaurant.is_favorite})" class="make-favorite-link">
       ${getFavoriteIcon(restaurant.id, restaurant.is_favorite)}
     </a>
   </figure>
-  <a href="${UrlHelper.urlForRestaurant(restaurant)}" class="details-btn">View Details!</a>
+  <a href="${UrlHelper.urlForRestaurant(restaurant)}" class="details-btn" tabindex="0">View Details!</a>
   `;
   li.innerHTML = liInner;
   return li;
 }
 
-var getFavoriteIcon = (restaurantId, is_favorite) => `<i id="fav-${restaurantId}" class="fa fa-heart ${is_favorite === "true"? "favorite":""} favorite-icon"></i>`;
-
+var getFavoriteIcon = (restaurantId, is_favorite) => {
+  log(logPrefix, `restaurantID: ${restaurantId}, favoriteVal: %o`, is_favorite);
+  let fav = trueBool(is_favorite);
+  return `<i id="fav-${restaurantId}" class="fa fa-heart ${fav?"favorite":""} favorite-icon"></i>`;
+}
 /**
  * 
  * @param {number} restaurantId 
  * @param {boolean} is_favorite 
  * @param {string} elementId 
  */
-export function toggleFavorite(restaurantId, is_favorite, elementId) {
-  let el = document.getElementById(elementId);
-  
-  let newFavoriteVal = !el.classList.contains('favorite');
+export function toggleFavorite(restaurantId, is_favorite) {
+  let newVal = !trueBool(is_favorite);
 
-  log(logPrefix,`${is_favorite} => ${newFavoriteVal}`);
-  
-  ApiHelper.favoriteRestaurant(restaurantId, newFavoriteVal)
+  let iconElement = document.getElementById(`fav-${restaurantId}`);
+  if(newVal){
+    iconElement.classList.remove('favorite');
+    iconElement.classList.add('favorite');
+  } else {
+    iconElement.classList.remove('favorite');
+  }
+  ApiHelper.favoriteRestaurant(restaurantId, newVal)
   .then(res => {
     log(logPrefix,"res from favs %o", res);
-    el.classList.toggle('favorite', newFavoriteVal);
   });
 }
 /**

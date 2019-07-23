@@ -4,7 +4,7 @@ import {UrlHelper} from '../urlHelper.js';
 import {getParameterByName} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 14;
+const version = 18;
 
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 
@@ -18,7 +18,6 @@ const currentCaches = [
   currentImgCacheName
 ];
 
-let offlineReviewCounter = 9999;
 
 log(`Running sw.js version ${version}`);
 
@@ -233,10 +232,17 @@ async function fetchApiResponse(event, requestUrl) {
     log(`PUT(${requestUrl.href})`);
 
     if(/.*is_favorite=.*/.test(requestUrl.search)) {
-      let isFavorite = Boolean(getParameterByName('is_favorite', requestUrl.search));
-      log('Set favorite: ', isFavorite);
+      let re = /.*\/restaurants\/(?<restaurantId>\d+)\/.*is_favorite=(?<is_favorite>true|false|undefined)/g;
+      let result = re.exec(requestUrl.href);
+      let {restaurantId, is_favorite} = result.groups;
+      //log(`Set favorite: ${is_favorite} on restuarant ${restaurantId}`);
 
-      return fetch(event.request).catch(err => {
+      return fetch(event.request).then(res => {
+          //log('Result from fav op: %o', res);
+          DBHelper.setFavoriteRestaurant(restaurantId, is_favorite);
+          return res;
+        })
+      .catch(err => {
         log(`error marking favorite: ${requestUrl.pathname}`);
       });
     }

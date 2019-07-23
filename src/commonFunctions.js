@@ -1,5 +1,8 @@
 import {UrlHelper} from './urlHelper';
 
+export function trueBool(b) {
+  return b === 'false' ? false : Boolean(b);
+}
 export function mapMarkerForRestaurant(restaurant, map) {
   const marker = new google.maps.Marker({
     position: restaurant.latlng,

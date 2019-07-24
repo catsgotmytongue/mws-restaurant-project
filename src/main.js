@@ -2,7 +2,7 @@ import "./sass/restaurant-list.scss";
 
 import { ApiHelper } from './apihelper';
 import { UrlHelper } from './urlHelper';
-import { mapMarkerForRestaurant, detectOnlineStatus, log, trueBool, setNetworkIndicator } from './commonFunctions';
+import { mapMarkerForRestaurant, detectOnlineStatus, log, trueBool, setNetworkIndicator, h } from './commonFunctions';
 const currentPage = window.location.href;
 let updateInterval = 5000;
 let logPrefix = '[main.js]';
@@ -134,12 +134,12 @@ export function updateRestaurants(withReset = true) {
   const neighborhood = nSelect[nIndex].value;
 
   ApiHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood)
-  .then(restaurants => {
+  .then( async restaurants => {
     if(withReset) {
       resetRestaurants(restaurants);
       addMarkersToMap();
     }
-    fillRestaurantsHTML(restaurants);
+    await fillRestaurantsHTML(restaurants);
   })
   .catch(error => console.error(error) )
 }
@@ -164,25 +164,34 @@ export var resetRestaurants = (restaurants) => {
 /**
  * Create all restaurants HTML and add them to the webpage.
  */
-export var fillRestaurantsHTML = (restaurants = self.restaurants) => {
+export var fillRestaurantsHTML = async (restaurants = self.restaurants) => {
   const ul = document.getElementById('restaurants-list');
   ul.innerHTML = '';
   //log(logPrefix, 'restaurants in fillRestaurantsHTML: %o', restaurants);
-  restaurants.forEach(restaurant => {
-    ul.append(createRestaurantHTML(restaurant));
+  restaurants.forEach(async restaurant => {
+    ul.append(await createRestaurantHTML(restaurant));
   });
+  ul.append( renderProduct({id: 'an-id',type: 'a product type'}) )
 
 }
+
+/** @jsx h **/
+export const renderProduct = product => (
+  <div class="product">
+    <span class="id">{product.id}</span>
+    <span class="type">{product.type}</span>
+  </div>
+)
 
 /**
  * Create restaurant HTML.
  */
-export var createRestaurantHTML = (restaurant) => {
+export var createRestaurantHTML = async (restaurant) => {
   const li = document.createElement('li');
 
-  const src1 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 400w';
-  const src2 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
-  const src3 = UrlHelper.imageUrlForRestaurant(restaurant, "1600")+' 1600w';
+  const src1 = await UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 400w';
+  const src2 = await UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
+  const src3 = await UrlHelper.imageUrlForRestaurant(restaurant, "1600")+' 1600w';
   
   const liInner = `
   <figure>

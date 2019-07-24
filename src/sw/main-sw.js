@@ -1,10 +1,10 @@
 import {DBHelper} from '../dbhelper.js';
 import {ApiHelper} from '../apihelper.js';
 import {UrlHelper} from '../urlHelper.js';
-import {getParameterByName} from '../commonFunctions';
+import {getParameterByName, supportsWebp} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 52;
+const version = 42;
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 const loggingEnabled = true;
 const cacheNamePrefix = 'restaurant-';
@@ -16,15 +16,15 @@ const currentCaches = [
   currentStaticCacheName,
   currentImgCacheName
 ];
-
+let webpSupported = false;
 
 log(`Running sw.js version ${version}`);
 
 // install is called when service worker is actually installed
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(currentStaticCacheName)
-    .then(cache => cache.addAll([
+  event.waitUntil( (async () => {
+    let cache  = await caches.open(currentStaticCacheName);
+    await cache.addAll([
       '/',
       `/css/restaurant_detail.css`,
       `/css/restaurant_list.css`,
@@ -37,9 +37,13 @@ self.addEventListener('install', event => {
       `/restaurant_detail.js`,
       '/register_sw.js',
       'https://kit.fontawesome.com/be9114bde4.js'
-    ]))
-    .catch(err=> log('Error when adding cached items %o', err))
-  )
+      //"https://placehold.it/300"
+    ])
+    .catch(err=> log('Error when adding cached items %o', err));
+
+    webpSupported = await supportsWebp();
+
+  })() )
 });
 
 // activate is called when an installed service worker is becoming the active service worker
@@ -185,8 +189,8 @@ async function fetchApiResponse(event, requestUrl) {
       return jsonResponse(dbReviews);
     }
 
-    if(/.*\/restaurants\/\d+\//.test(requestUrl.href)) {
-      let re = /.*\/restaurants\/(?<restaurantId>\d+)\//;
+    if(/.*\/restaurants\/\d+/.test(requestUrl.href)) {
+      let re = /.*\/restaurants\/(?<restaurantId>\d+)/;
       let result = re.exec(requestUrl.href);
       let id = result.groups.restaurantId
       
@@ -253,7 +257,7 @@ async function fetchApiResponse(event, requestUrl) {
 
   log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);
   let response = await caches.match(event.request);
-  return response || fetch(event.request).catch(reason => log("fetchApiResponse::Cache miss: ",reason)); 
+  return response || fetch(event.request).catch(reason => log("fetchApiResponse::Failure: ",reason)); 
 }
 
 async function fetchSameOriginResponse(event, requestUrl) {
@@ -282,20 +286,31 @@ async function fetchSameOriginResponse(event, requestUrl) {
     .catch(reason => log("Cache miss: %o %o", reason, event.request));
 }
 
-function serveImage(request) {
-  let imgKey = request.url.replace(/-\d+\.jpg$/, '');
-  return caches
-          .open(currentImgCacheName)
-          .then(cache => 
-            cache.match(imgKey)
-            .then(response => 
-              response || fetch(request)
-              .then(imageResponse => {
+async function serveImage(request) {
+  let imgKey = request.url.replace(/-\d+$/, '');
+
+  let cache = await caches.open(currentImgCacheName);
+  let cacheResponse = await cache.match(imgKey);
+  if(cacheResponse)
+    log('serve image from cache: %o => %o', imgKey, request.url);
+  
+    if(webpSupported)
+      log('attempt to return webp image...');
+
+    let fetchImage = new Promise( (resolve, reject) => {
+      if(webpSupported) {
+        log(`fetch webp... ${imgKey}, ${request.url}, replace .jpg: ${request.url.replace('.jpg', '.webp')}`);
+        return fetch(request.url.replace('.jpg', '.webp')).then( img => resolve(img)).catch(err=> reject(err));
+      } else {
+        log(`fetch jpg... ${imgKey}`);
+        return fetch(request).then(img => resolve(img)).catch(err => reject(err));
+      }
+    });
+    
+  return cacheResponse || fetchImage.then(imageResponse => {
                 cache.put(imgKey, imageResponse.clone()); 
                 return imageResponse;
-              }) 
-            )
-          );
+              });
 }
 
 function serveAsset(request) {
@@ -312,3 +327,14 @@ function serveAsset(request) {
     )
   );
 }
+
+
+
+(async () => {
+  if(await supportsWebp()) {
+    log('does support');
+  }
+  else {
+    log('does not support');
+  }
+})();

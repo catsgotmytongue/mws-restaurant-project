@@ -19,3 +19,5 @@ performance requirements using Lighthouse
 - Accessibility score >= 90
   - The application uses appropriate focus management for navigation, and semantic elements and ARIA attributes are used correctly. 
   - Roles are correctly defined for all elements of the review form.
+
+  

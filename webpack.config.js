@@ -3,7 +3,11 @@ const cleanWebPackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin'); 
 const CopyPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const ImageminWebpWebpackPlugin= require("imagemin-webp-webpack-plugin");
+
 const siteTitle = 'Restaurant Reviews 3';
+
+
 
 module.exports = {
     mode: 'development',
@@ -24,16 +28,29 @@ module.exports = {
     },
     module: {
         rules: [
-            // {
-            //   test: /\.m?js$/,
-            //   exclude: /(node_modules|bower_components)/,
-            //   use: {
-            //     loader: 'babel-loader',
-            //     options: {
-            //       presets: ['@babel/preset-env']
-            //     }
-            //   }
-            // },
+            {
+              test: /\.m?js$/,
+              exclude: /(node_modules|bower_components)/,
+              use: {
+                loader: 'babel-loader',
+                options: {
+                  presets: [
+                    [
+                      '@babel/preset-env',
+                      {
+                        'useBuiltIns': 'usage'
+                      }
+                    ],
+                    [
+                      '@babel/preset-react',
+                      {
+                        "pragma": "h"
+                      }
+                    ]
+                  ]
+                }
+              }
+            },
             {
                 test: /\.s?css$/,
                 use: [
@@ -75,6 +92,18 @@ module.exports = {
                 {from: 'src/assets/img/*', to: 'img/[name].[ext]'},
                 {from: 'src/assets/favicon.ico', to: 'favicon.ico'},
                 {from: 'src/assets/manifest.json', to: 'manifest.json'},
-            ])
+            ]),
+        new ImageminWebpWebpackPlugin({
+          config: [{
+            test: /\.(jpe?g|png)/,
+            options: {
+              quality:  30
+            }
+          }],
+          //overrideExtension: true,
+          detailedLogs: false,
+          silent: false,
+          strict: true
+        })
     ]
 };

@@ -2,17 +2,17 @@
     "short_name": "Restaurants Reviews",
     "name": "Restaurants Reviews",
     "start_url": "./index.html",
-    "background_color": "#3367D6",
+    "background_color": "white",
     "display": "standalone",
-    "theme_color": "#3367D6",
+    "theme_color": "#155889",
     "icons": [
       {
-        "src": "/img/restaurants-192x192.png",
+        "src": "img/restaurants-192x192.png",
         "type": "image/png",
         "sizes": "192x192"
       },
       {
-        "src": "/img/restaurants-512x512.png",
+        "src": "img/restaurants-512x512.png",
         "type": "image/png",
         "sizes": "512x512"
       }

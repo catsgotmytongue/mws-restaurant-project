@@ -4,7 +4,7 @@ import {UrlHelper} from '../urlHelper.js';
 import {getParameterByName, supportsWebp} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 42;
+const version = 17;
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 const loggingEnabled = true;
 const cacheNamePrefix = 'restaurant-';
@@ -251,6 +251,8 @@ async function fetchApiResponse(event, requestUrl) {
         })
       .catch(err => {
         log(`error marking favorite: ${requestUrl.pathname}`);
+          DBHelper.setFavoriteRestaurant(restaurantId, is_favorite);
+          return jsonResponse({id: restaurantId, is_favorite});
       });
     }
   }
@@ -327,14 +329,3 @@ function serveAsset(request) {
     )
   );
 }
-
-
-
-(async () => {
-  if(await supportsWebp()) {
-    log('does support');
-  }
-  else {
-    log('does not support');
-  }
-})();

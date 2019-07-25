@@ -4,7 +4,7 @@ import {UrlHelper} from '../urlHelper.js';
 import {getParameterByName, supportsWebp} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 17;
+const version = 18;
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 const loggingEnabled = true;
 const cacheNamePrefix = 'restaurant-';

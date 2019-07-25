@@ -1,3 +1,5 @@
+/** @jsx h */
+
 import "./sass/restaurant-list.scss";
 
 import { ApiHelper } from './apihelper';
@@ -95,7 +97,6 @@ export var fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
   });
 }
 
-/** @jsx h */
 export const renderOption = option => {
   return (
     <option value={`${option.value}`}>{option.text}</option>
@@ -183,53 +184,59 @@ export var fillRestaurantsHTML = async (restaurants = self.restaurants) => {
 /**
  * Create restaurant HTML.
  */
-// export var createRestaurantHTML = async (restaurant) => {
-//   const li = document.createElement('li');
+export var renderRestaurantCard = restaurant => {
+  const li = document.createElement('li');
 
-//   const src1 = await UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 400w';
-//   const src2 = await UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
-//   const src3 = await UrlHelper.imageUrlForRestaurant(restaurant, "1600")+' 1600w';
-  
-//   const liInner = `
-//   <figure>
-//     <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}" alt="${restaurant.name} Restaurant" tabindex="0">
-//     <figcaption>
-//       <h1 tabindex="0">${restaurant.name} </h1>
-//       <p tabindex="0">${restaurant.neighborhood}</p>
-//       <p tabindex="0">${restaurant.address}</p>
-      
-//     </figcaption>
-//     <a href="javascript:toggleFavorite(${restaurant.id}, ${restaurant.is_favorite})" class="make-favorite-link" aria-label="favorite ${restaurant.name}">
-//       ${getFavoriteIcon(restaurant.id, restaurant.is_favorite)}
-//     </a>
-//   </figure>
-//   <a href="${UrlHelper.urlForRestaurant(restaurant)}" class="details-btn" tabindex="0">View Details!</a>
-//   `;
-//   li.innerHTML = liInner;
-//   return li;
-// }
-
-/** @jsx h **/
-export const renderRestaurantCard = restaurant => {
   const src1 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 400w';
   const src2 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
   const src3 = UrlHelper.imageUrlForRestaurant(restaurant, "1600")+' 1600w';
-  return (
-  <li>
+  
+  const liInner = `
   <figure>
-    <img srcset={`${src1}, ${src2}, ${src3}`} class="restaurant-img" src={`${src1}`} alt={`${restaurant.name} Restaurant`} tabindex="0"/>
+    <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}" alt="${restaurant.name} Restaurant" tabindex="0">
     <figcaption>
-      <h1 tabindex="0">{restaurant.name} </h1>
-      <p tabindex="0">{restaurant.neighborhood}</p>
-      <p tabindex="0">{restaurant.address}</p>
+      <h1 tabindex="0">${restaurant.name} </h1>
+      <p tabindex="0">${restaurant.neighborhood}</p>
+      <p tabindex="0">${restaurant.address}</p>
       
     </figcaption>
-    {renderFavoriteLink(restaurant)}
+    <a href="javascript:toggleFavorite(${restaurant.id})" class="make-favorite-link" aria-label="favorite ${restaurant.name}">
+      ${getFavoriteIcon(restaurant.id, restaurant.is_favorite)}
+    </a>
   </figure>
-  <a href={`${UrlHelper.urlForRestaurant(restaurant)}`} class="details-btn" tabindex="0">View Details!</a> 
-  </li>
-  );
-};
+  <a href="${UrlHelper.urlForRestaurant(restaurant)}" class="details-btn" tabindex="0">View Details!</a>
+  `;
+  li.innerHTML = liInner;
+  return li;
+}
+
+var getFavoriteIcon = (restaurantId, is_favorite) => {
+  //log(logPrefix, `restaurantID: ${restaurantId}, favoriteVal: %o`, is_favorite);
+  let fav = trueBool(is_favorite);
+  return `<i id="fav-${restaurantId}" class="fa fa-heart ${fav?"favorite":""} favorite-icon" is-favorite=${fav}></i>`;
+}
+
+// /** @jsx h **/
+// export const renderRestaurantCard = restaurant => {
+//   const src1 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 400w';
+//   const src2 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
+//   const src3 = UrlHelper.imageUrlForRestaurant(restaurant, "1600")+' 1600w';
+//   return (
+//   <li>
+//   <figure>
+//     <img srcset={`${src1}, ${src2}, ${src3}`} class="restaurant-img" src={`${src1}`} alt={`${restaurant.name} Restaurant`} tabindex="0"/>
+//     <figcaption>
+//       <h1 tabindex="0">{restaurant.name} </h1>
+//       <p tabindex="0">{restaurant.neighborhood}</p>
+//       <p tabindex="0">{restaurant.address}</p>
+      
+//     </figcaption>
+//     {renderFavoriteLink(restaurant)}
+//   </figure>
+//   <a href={`${UrlHelper.urlForRestaurant(restaurant)}`} class="details-btn" tabindex="0">View Details!</a> 
+//   </li>
+//   );
+// };
 
 
 /** @jsx h **/

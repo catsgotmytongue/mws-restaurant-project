@@ -15,6 +15,7 @@
   "scripts": {
     "build:babel": "babel js -d ES5",
     "build:dev": "npx webpack --mode development",
+    "build": "npx webpack --mode production",
     "build:docker": "docker build -t curtmullin/mws:latest .",
     "start": "cross-var \"npx http-server dist -p $npm_package_config_serverPort\"",
     "dev": "concurrently \"npm run dev:start:server\" \"npm run dev:start:api\"",

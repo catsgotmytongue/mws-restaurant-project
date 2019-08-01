@@ -4,7 +4,7 @@ import {UrlHelper} from '../urlHelper.js';
 import {getParameterByName, supportsWebp} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 42;
+const version = 46;
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 const loggingEnabled = true;
 const cacheNamePrefix = 'restaurant-';
@@ -181,10 +181,11 @@ async function fetchApiResponse(event, requestUrl) {
     }
 
     if(/.*\/restaurants\/\d+/.test(requestUrl.href)) {
-      let re = /.*\/restaurants\/(?<restaurantId>\d+)/;
+      let re = /.*\/restaurants\/(\d+)/;
       let result = re.exec(requestUrl.href);
-      let id = result.groups.restaurantId
-      
+
+      //console.log('result: %o', result);
+      let id = result[1];
       let restaurant = await DBHelper.getRestaurantById(id);
       if(restaurant)
         return jsonResponse(restaurant);
@@ -230,9 +231,10 @@ async function fetchApiResponse(event, requestUrl) {
     //log(`PUT(${requestUrl.href})`);
 
     if(/.*is_favorite=.*/.test(requestUrl.search)) {
-      let re = /.*\/restaurants\/(?<restaurantId>\d+)\/.*is_favorite=(?<is_favorite>true|false|undefined)/g;
+      let re = /.*\/restaurants\/(\d+)\/.*is_favorite=(true|false|undefined)/g;
       let result = re.exec(requestUrl.href);
-      let {restaurantId, is_favorite} = result.groups;
+      //console.log('result: %o', result);
+      let [_,restaurantId, is_favorite] = result;
       //log(`Set favorite: ${is_favorite} on restuarant ${restaurantId}`);
 
       return fetch(event.request).then(res => {

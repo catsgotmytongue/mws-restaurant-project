@@ -11,11 +11,11 @@ const siteTitle = 'Restaurant Reviews 3';
 
 module.exports = {
     entry: {
-        restaurant_list: './src/main.js',
-        restaurant_detail: './src/restaurant_detail.js',
-        dbhelper: './src/dbhelper.js',
-        register_sw: './src/sw/register-sw.js',
-        sw: './src/sw/main-sw.js'
+        'restaurant-list': './src/restaurant-list.js',
+        'restaurant-detail': './src/restaurant-detail.js',
+        'dbhelper': './src/dbhelper.js',
+        'register-sw': './src/sw/register-sw.js',
+        'main-sw': './src/sw/main-sw.js'
     },
     resolve: {
         modules: ['node_modules']

@@ -7,17 +7,28 @@ import { UrlHelper } from './urlHelper';
 import { mapMarkerForRestaurant, detectOnlineStatus, log, trueBool, setNetworkIndicator, h } from './commonFunctions';
 const currentPage = window.location.href;
 let updateInterval = 5000;
-let logPrefix = '[main.js]';
+let logPrefix = '[restaurant-list.js]';
 let restaurants,
   neighborhoods,
   cuisines
 var map
 var markers = [];
 
+
+/**
+ * Fetch neighborhoods and cuisines as soon as the page is loaded.
+ */
+document.addEventListener('DOMContentLoaded', async (event) => {
+  fetchNeighborhoods();
+  fetchCuisines();
+  setNetworkIndicator();
+  requestAnimationFrame(await update);
+});
+
 /**
  * Initialize Google map, called from HTML.
  */
-window.initMap = async function() {
+window.initMap = async function () {
    let loc = {
      lat: 40.722216,
      lng: -73.987501
@@ -27,14 +38,12 @@ window.initMap = async function() {
      center: loc,
      scrollwheel: false
    });
-   fetchNeighborhoods();
-   fetchCuisines();
-   updateRestaurants();
-   setNetworkIndicator();
-   requestAnimationFrame(await update);
+  //  updateRestaurants();
+  //  setNetworkIndicator();
+  //  requestAnimationFrame(await update);
  }
 
- let lastUpdateTime = 0;
+let lastUpdateTime = 0;
 async function update(currentTime) {
 
   // time our animation frame and animate only while online
@@ -48,33 +57,13 @@ async function update(currentTime) {
       log(logPrefix, 'Update Error: %o', err);
     }
   }
-
-  // loop forever to keep html up to date (unless we leave the page)
-  // if(currentPage === window.location.href) {
-  //   requestAnimationFrame(await update);
-  // }
 }
 
  window.toggleFavorite = toggleFavorite;
  window.updateRestaurants = updateRestaurants;
 
- window.addEventListener('offline', function(event) {
-  window.document.querySelector('.network-indicator').classList.add('offline');
-});
 
-window.addEventListener('online', function(event) {
-  window.document.querySelector('.network-indicator').classList.remove('offline');
 
-});
-/**
- * Fetch neighborhoods and cuisines as soon as the page is loaded.
- */
-document.addEventListener('DOMContentLoaded', async (event) => {
-  fetchNeighborhoods();
-  fetchCuisines();
-  setNetworkIndicator();
-  requestAnimationFrame(await update);
-});
 
 /**
  * Fetch all neighborhoods and set their HTML.

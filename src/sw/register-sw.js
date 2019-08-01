@@ -54,7 +54,7 @@ var registerServiceWorker = function(serviceWorkerFile) {
 // wait until after page loads to register a service worker
 if('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    registerServiceWorker("./sw.js");
+    registerServiceWorker("./main-sw.js");
   });
 
   window.addEventListener('offline', function(event) {

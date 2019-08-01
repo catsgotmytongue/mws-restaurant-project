@@ -4,7 +4,7 @@ import {UrlHelper} from '../urlHelper.js';
 import {getParameterByName, supportsWebp} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 46;
+const version = 65;
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 const loggingEnabled = true;
 const cacheNamePrefix = 'restaurant-';
@@ -26,16 +26,16 @@ self.addEventListener('install', event => {
     let cache  = await caches.open(currentStaticCacheName);
     await cache.addAll([
       '/',
-      `/css/restaurant_detail.css`,
-      `/css/restaurant_list.css`,
+      `/css/restaurant-detail.css`,
+      `/css/restaurant-list.css`,
       '/favicon.ico',
       '/manifest.json',
       `/index.html`,
       `/restaurant.html`,
-      `/restaurant_list.js`,
+      `/restaurant-list.js`,
       `/dbhelper.js`,
-      `/restaurant_detail.js`,
-      '/register_sw.js',
+      `/restaurant-detail.js`,
+      '/register-sw.js',
       'https://kit.fontawesome.com/be9114bde4.js'
       //"https://placehold.it/300"
     ])

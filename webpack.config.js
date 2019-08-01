@@ -10,7 +10,6 @@ const siteTitle = 'Restaurant Reviews 3';
 
 
 module.exports = {
-    mode: 'development',
     entry: {
         restaurant_list: './src/main.js',
         restaurant_detail: './src/restaurant_detail.js',
@@ -28,29 +27,29 @@ module.exports = {
     },
     module: {
         rules: [
-            {
-              test: /\.m?js$/,
-              exclude: /(node_modules|bower_components)/,
-              use: {
-                loader: 'babel-loader',
-                options: {
-                  presets: [
-                    [
-                      '@babel/preset-env',
-                      {
-                        'useBuiltIns': 'usage'
-                      }
-                    ],
-                    [
-                      '@babel/preset-react',
-                      {
-                        "pragma": "h"
-                      }
-                    ]
-                  ]
-                }
-              }
-            },
+            // {
+            //   test: /\.m?js$/,
+            //   exclude: /(node_modules|bower_components)/,
+            //   use: {
+            //     loader: 'babel-loader',
+            //     options: {
+            //       presets: [
+            //         [
+            //           '@babel/preset-env',
+            //           {
+            //             'useBuiltIns': 'usage'
+            //           }
+            //         ],
+            //         [
+            //           '@babel/preset-react',
+            //           {
+            //             "pragma": "h"
+            //           }
+            //         ]
+            //       ]
+            //     }
+            //   }
+            // },
             {
                 test: /\.s?css$/,
                 use: [

@@ -27,6 +27,8 @@ window.initMap = async function() {
      center: loc,
      scrollwheel: false
    });
+   fetchNeighborhoods();
+   fetchCuisines();
    updateRestaurants();
    setNetworkIndicator();
    requestAnimationFrame(await update);
@@ -67,10 +69,11 @@ window.addEventListener('online', function(event) {
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener('DOMContentLoaded', async (event) => {
   fetchNeighborhoods();
   fetchCuisines();
   setNetworkIndicator();
+  requestAnimationFrame(await update);
 });
 
 /**
@@ -93,14 +96,19 @@ export var fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
     // const option = document.createElement('option');
     // option.innerHTML = neighborhood;
     // option.value = neighborhood;
-    select.append( renderOption({value: neighborhood, text: neighborhood}) );
+    select.appendChild( renderOption({value: neighborhood, text: neighborhood}) );
   });
 }
 
 export const renderOption = option => {
-  return (
-    <option value={`${option.value}`}>{option.text}</option>
-  );
+  let opt = document.createElement('option');
+  opt.value = option.value;
+  opt.innerText = option.text;
+
+  return opt;
+  // return (
+  //   <option value={`${option.value}`}>{option.text}</option>
+  // );
 }
 
 /**
@@ -120,12 +128,11 @@ export var fetchCuisines = () => {
  */
 export var fillCuisinesHTML = (cuisines = self.cuisines) => {
   const select = document.getElementById('cuisines-select');
-
   cuisines.forEach(cuisine => {
     // const option = document.createElement('option');
     // option.innerHTML = cuisine;
     // option.value = cuisine;
-    select.append( renderOption({value: cuisine, text: cuisine}) );
+    select.appendChild( renderOption({value: cuisine, text: cuisine}) );
   });
 }
 
@@ -195,7 +202,7 @@ export var renderRestaurantCard = restaurant => {
   <figure>
     <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}" alt="${restaurant.name} Restaurant" tabindex="0">
     <figcaption>
-      <h1 tabindex="0">${restaurant.name} </h1>
+      <h1 tabindex="0">${restaurant.name} </h1> 
       <p tabindex="0">${restaurant.neighborhood}</p>
       <p tabindex="0">${restaurant.address}</p>
       
@@ -240,16 +247,33 @@ var getFavoriteIcon = (restaurantId, is_favorite) => {
 
 
 /** @jsx h **/
-export const renderFavoriteLink = (restaurant) => (
-    <a href={`javascript:toggleFavorite(${restaurant.id})`} class="make-favorite-link" aria-label={`favorite ${restaurant.name}`}>
-      {renderFavoriteIcon(restaurant)}
-    </a>
-);
+export const renderFavoriteLink = (restaurant) => {
+  let anchor = document.createElement('a');
+  anchor.setAttribute('aria-label', `favorite ${restaurant.name}`)
+  anchor.setAttribute('class','make-favorite-link')
+  anchor.href = `javascript:toggleFavorite(${restaurant.id})`
+  anchor.innerText = renderFavoriteIcon(restaurant)
+  // (
+  //     <a href={`javascript:toggleFavorite(${restaurant.id})`} class="make-favorite-link" aria-label={`favorite ${restaurant.name}`}>
+  //       {renderFavoriteIcon(restaurant)}
+  //     </a>
+  // );
+
+  return anchor;
+}
+
 
 /** @jsx h **/
 export const renderFavoriteIcon = ({id, is_favorite}) => {
   let fav = trueBool(is_favorite);
-  return (<i id={`fav-${id}`} class={`fa fa-heart ${fav?"favorite":""} favorite-icon`} is-favorite={`${fav}`}></i>)
+
+  let ic = document.createElement('i')
+  ic.setAttribute('is-favorite', fav)
+  ic.setAttribute('class', `fa fa-heart ${fav?"favorite":""} favorite-icon`)
+  ic.id = `fav-${id}`
+
+  return ic;
+    // return (<i id={`fav-${id}`} class={`fa fa-heart ${fav?"favorite":""} favorite-icon`} is-favorite={`${fav}`}></i>)
 }
 /**
  * 

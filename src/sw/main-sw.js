@@ -4,7 +4,7 @@ import {UrlHelper} from '../urlHelper.js';
 import {getParameterByName, supportsWebp} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 18;
+const version = 42;
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 const loggingEnabled = true;
 const cacheNamePrefix = 'restaurant-';
@@ -48,7 +48,7 @@ self.addEventListener('install', event => {
 
 // activate is called when an installed service worker is becoming the active service worker
 self.addEventListener('activate', event => {
-  log("activating service worker with version %s", version);
+  //log("activating service worker with version %s", version);
 
   event.waitUntil(
     caches.keys()
@@ -65,7 +65,7 @@ self.addEventListener('activate', event => {
     ) 
   ); 
 
-  log('createDB() from service worker activation...');
+  //log('createDB() from service worker activation...');
   // reccomended creation of DB during SW activation event: 
   // https://developers.google.com/web/ilt/pwa/live-data-in-the-service-worker
   event.waitUntil(
@@ -109,26 +109,17 @@ self.addEventListener('message', async event => {
   if(event.data.action === 'skipWaiting') {
     self.skipWaiting();
   }
-
-  if(event.data.action === 'online')  {
-    log("User Online");
-
-  }
-
-  if(event.data.action === 'offline') {
-    log("User Offline");
-  }
 });
 
 // background sync API
 self.addEventListener('sync', async event =>{
-  log('sync event: %o', event);
+  //log('sync event: %o', event);
 
   if(event.tag === "syncReviews") {
     let reviews = await DBHelper.getReviewsForUpdate();
 
     for( var review of reviews) {
-      log('Review to post %o', review);
+      //log('Review to post %o', review);
       
       ApiHelper.postRestaurantReview(review).then(
         async rv => {
@@ -159,7 +150,7 @@ async function fetchApiResponse(event, requestUrl) {
       //log('handle promises with await!')
       // handle /restaurants endpoint
       let restaurants = await DBHelper.getRestaurants();
-      log('restaurants from db: %o', restaurants);
+      //log('restaurants from db: %o', restaurants);
       
       if(restaurants && restaurants.length > 0)
         return jsonResponse(restaurants);
@@ -174,7 +165,7 @@ async function fetchApiResponse(event, requestUrl) {
 
     if(requestUrl.pathname.startsWith("/reviews")) {
       const restaurantId = getParameterByName('restaurant_id', requestUrl.href);
-      log("fetchApiResponse: reviews for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
+      //log("fetchApiResponse: reviews for restaurant %o, %o ... %o", restaurantId, requestUrl.href, requestUrl.pathname);
       
       let dbReviews = await DBHelper.getRestaurantReviewsByRestaurant(restaurantId);
 
@@ -182,7 +173,7 @@ async function fetchApiResponse(event, requestUrl) {
         fetch(event.request)
           .then( res => res.clone().json())
           .then( reviews => {
-            log("adding restaurants to DB:%o", reviews);
+            //log("adding restaurants to DB:%o", reviews);
             return DBHelper.addRestaurantReviewsforRestaurant(reviews); }) 
       );
 
@@ -199,34 +190,34 @@ async function fetchApiResponse(event, requestUrl) {
         return jsonResponse(restaurant);
 
       const restaurantFromApi = await ApiHelper.fetchRestaurantById(id);
-      log('res: %o', restaurantFromApi);
+      //log('res: %o', restaurantFromApi);
       DBHelper.addRestaurant(restaurantFromApi);
       return restaurantFromApi;
     }
   }
 
   if(event.request.method === 'POST') {
-    log(`POST(${requestUrl.pathname})`)
+    //log(`POST(${requestUrl.pathname})`)
     if(requestUrl.pathname === "/reviews") {
       var reqClone = event.request.clone();
       var reqjson = (await reqClone.text());
       var jobject = JSON.parse(reqjson);
 
-      log("intercepted post: %o", {event, reqClone, reqjson, jobject});
+      //log("intercepted post: %o", {event, reqClone, reqjson, jobject});
 
       var revObj = await ApiHelper.postRestaurantReview(jobject).then( review => {
-        log('Posted review(fetchResponse): %o', review);
-        DBHelper.addRestaurantReview(review).then(rev => log('review: %o', rev));
+        //log('Posted review(fetchResponse): %o', review);
+        DBHelper.addRestaurantReview(review);
         return review;
       }).catch( err => {
-        log('Error in post %o', err);
+        //log('Error in post %o', err);
         let offlineReview = {...jobject, createdAt: Date.now(), id: nanoid(16)};
-        DBHelper.addRestaurantReview(offlineReview).then(rev => log('review: %o', rev));
-        log('reg info: %o:: %o', self, registration);
+        DBHelper.addRestaurantReview(offlineReview);
+        //log('reg info: %o:: %o', self, registration);
         if(self.registration.sync) {
           let eventTag = 'syncReviews';
           self.registration.sync.register(eventTag);
-          log('registered sync event %o', eventTag);
+          //log('registered sync event %o', eventTag);
         }
         return offlineReview;
       });
@@ -236,7 +227,7 @@ async function fetchApiResponse(event, requestUrl) {
   }
 
   if(event.request.method === 'PUT') {
-    log(`PUT(${requestUrl.href})`);
+    //log(`PUT(${requestUrl.href})`);
 
     if(/.*is_favorite=.*/.test(requestUrl.search)) {
       let re = /.*\/restaurants\/(?<restaurantId>\d+)\/.*is_favorite=(?<is_favorite>true|false|undefined)/g;
@@ -250,14 +241,14 @@ async function fetchApiResponse(event, requestUrl) {
           return res;
         })
       .catch(err => {
-        log(`error marking favorite: ${requestUrl.pathname}`);
+        //log(`error marking favorite: ${requestUrl.pathname}`);
           DBHelper.setFavoriteRestaurant(restaurantId, is_favorite);
           return jsonResponse({id: restaurantId, is_favorite});
       });
     }
   }
 
-  log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);
+  //log('fetchApiResponse: Unknown state: %o, %o', event.request, requestUrl);
   let response = await caches.match(event.request);
   return response || fetch(event.request).catch(reason => log("fetchApiResponse::Failure: ",reason)); 
 }
@@ -294,17 +285,17 @@ async function serveImage(request) {
   let cache = await caches.open(currentImgCacheName);
   let cacheResponse = await cache.match(imgKey);
   if(cacheResponse)
-    log('serve image from cache: %o => %o', imgKey, request.url);
+    //log('serve image from cache: %o => %o', imgKey, request.url);
   
-    if(webpSupported)
-      log('attempt to return webp image...');
-
+    if(webpSupported){
+      //log('attempt to return webp image...');
+    }
     let fetchImage = new Promise( (resolve, reject) => {
       if(webpSupported) {
-        log(`fetch webp... ${imgKey}, ${request.url}, replace .jpg: ${request.url.replace('.jpg', '.webp')}`);
+        //log(`fetch webp... ${imgKey}, ${request.url}, replace .jpg: ${request.url.replace('.jpg', '.webp')}`);
         return fetch(request.url.replace('.jpg', '.webp')).then( img => resolve(img)).catch(err=> reject(err));
       } else {
-        log(`fetch jpg... ${imgKey}`);
+        //log(`fetch jpg... ${imgKey}`);
         return fetch(request).then(img => resolve(img)).catch(err => reject(err));
       }
     });
@@ -313,19 +304,4 @@ async function serveImage(request) {
                 cache.put(imgKey, imageResponse.clone()); 
                 return imageResponse;
               });
-}
-
-function serveAsset(request) {
-  return caches
-  .open(currentStaticCacheName)
-  .then(cache => 
-    cache.match(request)
-    .then(response => 
-      response || fetch(request, {cache: "no-cache"})
-      .then(networkResponse => {
-        cache.put(request, networkResponse.clone());
-        return networkResponse;
-      }) 
-    )
-  );
 }

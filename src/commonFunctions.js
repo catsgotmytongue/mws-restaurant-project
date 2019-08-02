@@ -105,3 +105,29 @@ export const h = (tag, attrs, ...children) => {
   }, flatten(children))
   return elm
 }
+
+export function lazyLoadImages() {
+  const config = {
+    rootMargin: '0px',
+    threshold: 0
+  };
+
+  let observer = new IntersectionObserver(function(entries, self) {
+    entries.forEach(entry => {
+      if(entry.isIntersecting) {
+        preloadImage(entry.target);
+        self.unobserve(entry.target);
+      }
+    });
+  }, config);
+  
+  const imgs = document.querySelectorAll('[data-src]');
+  imgs.forEach(img => {
+    observer.observe(img);
+  });
+  
+  function preloadImage(img) {
+    img.setAttribute('srcset', img.getAttribute('data-srcset'));
+    img.setAttribute('src', img.getAttribute('data-src'));
+  }
+}

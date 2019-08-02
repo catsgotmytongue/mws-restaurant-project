@@ -91,6 +91,9 @@ module.exports = {
                 {from: 'src/assets/img/*', to: 'img/[name].[ext]'},
                 {from: 'src/assets/favicon.ico', to: 'favicon.ico'},
                 {from: 'src/assets/manifest.json', to: 'manifest.json'},
+                {from: 'src/font-awesome/css/custom.css', to: 'css/fontawesome.min.css'},
+                {from: 'src/font-awesome/css/solid.min.css', to: 'css/solid.min.css'},
+                {from: 'src/font-awesome/webfonts/*', to: 'webfonts/[name].[ext]'},
             ]),
         new ImageminWebpWebpackPlugin({
           config: [{

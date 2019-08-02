@@ -4,7 +4,7 @@ import {UrlHelper} from '../urlHelper.js';
 import {getParameterByName, supportsWebp} from '../commonFunctions';
 import nanoid from 'nanoid';
 
-const version = 65;
+const version = 115;
 const apiUrl = new URL(`${ApiHelper.ApiUrl}/restaurants`);
 const loggingEnabled = true;
 const cacheNamePrefix = 'restaurant-';
@@ -26,17 +26,33 @@ self.addEventListener('install', event => {
     let cache  = await caches.open(currentStaticCacheName);
     await cache.addAll([
       '/',
-      `/css/restaurant-detail.css`,
-      `/css/restaurant-list.css`,
+      '/index.html',
+      '/css/restaurant-list.css',
+      '/restaurant.html',
+      '/css/restaurant-detail.css',
       '/favicon.ico',
       '/manifest.json',
-      `/index.html`,
-      `/restaurant.html`,
-      `/restaurant-list.js`,
-      `/dbhelper.js`,
-      `/restaurant-detail.js`,
+      '/restaurant-list.js',
+      '/dbhelper.js',
+      '/restaurant-detail.js',
       '/register-sw.js',
-      'https://kit.fontawesome.com/be9114bde4.js'
+      '/css/fontawesome.min.css',
+      '/css/solid.min.css',
+      '/webfonts/fa-brands-400.eot',
+      '/webfonts/fa-brands-400.svg',
+      '/webfonts/fa-brands-400.ttf',
+      '/webfonts/fa-brands-400.woff',
+      '/webfonts/fa-brands-400.woff2',
+      '/webfonts/fa-regular-400.eot',
+      '/webfonts/fa-regular-400.svg',
+      '/webfonts/fa-regular-400.ttf',
+      '/webfonts/fa-regular-400.woff',
+      '/webfonts/fa-regular-400.woff2',
+      '/webfonts/fa-solid-900.eot',
+      '/webfonts/fa-solid-900.svg',
+      '/webfonts/fa-solid-900.ttf',
+      '/webfonts/fa-solid-900.woff',
+      '/webfonts/fa-solid-900.woff2'
       //"https://placehold.it/300"
     ])
     .catch(err=> log('Error when adding cached items %o', err));
@@ -78,7 +94,13 @@ self.addEventListener('fetch', event => {
   
   var requestUrl = new URL(event.request.url);
 
-  // make sure to handle only our origin's requests
+  // // capture all font-awesome requests :)
+  // if(event.request.url.includes('fontawesome.com') || event.request.referrer.includes('font-awesome') || requestUrl.pathname.startsWith("/algo") ) {
+  //   event.respondWith( fetchFontAwesomeResource(event, requestUrl) );
+  //   return;
+  // }
+
+  // make sure to handle our origin's requests
   if (requestUrl.origin === location.origin) {
     event.respondWith(
       fetchSameOriginResponse(event, requestUrl)
@@ -95,11 +117,19 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+
+
   // otherwise return from a cached response or network response appropriately
   event.respondWith(
     caches.match(event.request)
-      .then(response => response || fetch(event.request).catch(err=> log('error fetching: %o', event.request)) )
-      .catch(reason => log("Cache miss: ",reason)) 
+      .then(response => response || fetch(event.request).catch(err=> {
+        log('error fetching: %o', event.request);
+        return new Response({});
+      }))
+      .catch(reason => {
+        log("Cache miss: ",reason)
+        return new Response({});
+      })
   );
   return;
 });
@@ -147,14 +177,11 @@ async function fetchApiResponse(event, requestUrl) {
   
   if(event.request.method === "GET") {
     if(requestUrl.href === apiUrl.href) {
-      //log('handle promises with await!')
       // handle /restaurants endpoint
       let restaurants = await DBHelper.getRestaurants();
-      //log('restaurants from db: %o', restaurants);
       
       if(restaurants && restaurants.length > 0)
         return jsonResponse(restaurants);
-        
       const res = await fetch(event.request);
       const clonedRes = res.clone();
       restaurants = await clonedRes.json();
@@ -193,7 +220,7 @@ async function fetchApiResponse(event, requestUrl) {
       const restaurantFromApi = await ApiHelper.fetchRestaurantById(id);
       //log('res: %o', restaurantFromApi);
       DBHelper.addRestaurant(restaurantFromApi);
-      return restaurantFromApi;
+      return jsonResponse(restaurantFromApi);
     }
   }
 
@@ -254,14 +281,26 @@ async function fetchApiResponse(event, requestUrl) {
   let response = await caches.match(event.request);
   return response || fetch(event.request).catch(reason => log("fetchApiResponse::Failure: ",reason)); 
 }
-
+async function fetchAndCache(url, event) {
+  const res = await fetch(url);
+  let cache = await caches.open(currentStaticCacheName);
+  cache.put(event.request, res.clone());
+  return res;
+}
 async function fetchSameOriginResponse(event, requestUrl) {
   //log('SameOriginFetch: %o', event);
 
   if(event.request.method === 'GET') {
     // handle root, when offline
     if(requestUrl.pathname === '/') {
+      //try to get from cache first but no matter what update the cache
       return caches.match('/index.html');
+      // .catch( async err => {
+      //   event.waitUntil( async f => {
+      //     let res = await fetchAndCache('/index.html', event) 
+      //     return res;
+      //   } );
+      // });
     }
 
     // handle image requests
@@ -280,6 +319,23 @@ async function fetchSameOriginResponse(event, requestUrl) {
     response || fetch(event.request) )
     .catch(reason => log("Cache miss: %o %o", reason, event.request));
 }
+
+// async function fetchFontAwesomeResource(event, requestUrl) {
+//   let file = filenameFromPath(requestUrl.pathname);
+//   //log('font awesome: %o', file );
+//   //filenameFromPath(requestUrl.pathname);
+
+//   return caches.match(event.request).then(response => 
+//     response || fetch(`/font-awesome${file}`) ).then( async res => {
+//       let cache  = await caches.open(currentStaticCacheName);
+//       cache.put(event.request, res.clone());
+//       return res;
+//     })
+//     .catch(reason => log("Cache miss: %o %o", reason, event.request));
+
+// }
+
+const filenameFromPath = (path) => path.substring(path.lastIndexOf('/'));
 
 async function serveImage(request) {
   let imgKey = request.url.replace(/-\d+$/, '');

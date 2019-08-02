@@ -1,10 +1,9 @@
 import "./sass/restaurant-detail.scss";
 
-import {mapMarkerForRestaurant, log, getParameterByName, setNetworkIndicator} from './commonFunctions';
+import {mapMarkerForRestaurant, log, getParameterByName, setNetworkIndicator, lazyLoadImages} from './commonFunctions';
 
 import {ApiHelper} from './apihelper';
 import {UrlHelper} from './urlHelper';
-import { DBHelper } from "./dbhelper";
 const logPrefix='[restaurant_detail.js]';
 
 // update every n milliseconds
@@ -21,7 +20,7 @@ const currentPage = window.location.href;
 window.initMap = async function() {
   setNetworkIndicator();
   fetchRestaurantFromURL()
-  .then( async restaurant => {
+  .then( restaurant => {
     self.map = new google.maps.Map(document.getElementById('map'), {
         zoom: 16,
         center: restaurant.latlng,
@@ -30,7 +29,7 @@ window.initMap = async function() {
       fillBreadcrumb();
       mapMarkerForRestaurant(self.restaurant, self.map);
       fillRestaurantHTML(restaurant);
-      requestAnimationFrame(await update);
+      requestAnimationFrame(update);
   })
   .catch( err => console.error(err) );
 }
@@ -50,23 +49,10 @@ async function update(currentTime) {
       log(logPrefix, 'Update Error: %o', err);
     }
   }
-
-  // loop forever to keep html up to date (unless we leave the page)
-  if(currentPage === window.location.href) {
-    requestAnimationFrame(await update);
-  }
 }
 
 window.saveReview = saveReview;
 
-window.addEventListener('offline', function(event) {
-  window.document.querySelector('.network-indicator').classList.add('offline');
-});
-
-window.addEventListener('online', function(event) {
-  window.document.querySelector('.network-indicator').classList.remove('offline');
-
-});
 
 /**
  * Get current restaurant from page URL.
@@ -113,8 +99,8 @@ var fillRestaurantHTML = (restaurant = self.restaurant) => {
   const src1 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
   const src2 = UrlHelper.imageUrlForRestaurant(restaurant, "600")+' 600w';
   const src3 = UrlHelper.imageUrlForRestaurant(restaurant, "1600")+' 800w';
-  image.src = src1;
-  image.srcset = `${src1}, ${src2}, ${src3}`
+  image.setAttribute('data-src', src1);
+  image.setAttribute('data-srcset', `${src1}, ${src2}, ${src3}`);
   image.alt = `${restaurant.name}`;
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -125,6 +111,7 @@ var fillRestaurantHTML = (restaurant = self.restaurant) => {
   }
   // fill reviews
   fillReviewsHTML();
+  lazyLoadImages();
 }
 
 var getFavoriteIcon = (is_favorite) => `<i class="fa fa-heart ${is_favorite === "true"? "": "not-"}favorite"></i>`;
@@ -217,5 +204,8 @@ function saveReview(event, form) {
   ApiHelper.postRestaurantReview(entry).then(review => {
     self.restaurant.reviews.push(review);
     form.reset();
+  })
+  .finally( i => {
+    requestAnimationFrame(update);
   });
 }

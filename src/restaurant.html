@@ -9,6 +9,8 @@
     <link rel="apple-touch-icon" href="/img/touch-icon-iphone.png">
     <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css">
     <link rel="stylesheet" href="css/restaurant-detail.css" type="text/css">
+    <link rel="stylesheet" href="css/fontawesome.min.css" type="text/css">
+    <link rel="stylesheet" href="css/solid.min.css" type="text/css">
     <link rel="manifest" href="/manifest.json">
     <title><%= htmlWebpackPlugin.options.title %> - Details</title>
   </head>
@@ -85,18 +87,24 @@
       </a>
       All Rights Reserved.
     </footer>
-    <script
-      type="text/javascript"
-      src="dbhelper.js"></script>
+  </body>
+    <script>        
+        window.addEventListener('offline', function(event) {
+          window.document.querySelector('.network-indicator').classList.add('offline');
+        });
+
+        window.addEventListener('online', function(event) {
+          window.document.querySelector('.network-indicator').classList.remove('offline');
+
+        });
+    </script>
     <script
       type="text/javascript"
       src="restaurant-detail.js"></script>
+    
     <script
       async
       defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIfuVzxkRgpx4ds0VkEYXVVFzT-x7wch0&libraries=places&callback=initMap"></script>
-    <script src="register-sw.js"></script>
-    <script src="https://kit.fontawesome.com/be9114bde4.js"></script>
-  </body>
-
+    <script async defer src="register-sw.js"></script>
 </html>

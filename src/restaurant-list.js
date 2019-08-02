@@ -4,16 +4,16 @@ import "./sass/restaurant-list.scss";
 
 import { ApiHelper } from './apihelper';
 import { UrlHelper } from './urlHelper';
-import { mapMarkerForRestaurant, detectOnlineStatus, log, trueBool, setNetworkIndicator, h } from './commonFunctions';
+import { mapMarkerForRestaurant, detectOnlineStatus, log, trueBool, setNetworkIndicator, h, lazyLoadImages } from './commonFunctions';
 const currentPage = window.location.href;
-let updateInterval = 5000;
+let updateInterval = 1000;
 let logPrefix = '[restaurant-list.js]';
 let restaurants,
   neighborhoods,
   cuisines
 var map
 var markers = [];
-
+let lastFrameId = 0;
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
   fetchNeighborhoods();
   fetchCuisines();
   setNetworkIndicator();
-  requestAnimationFrame(await update);
+  lastFrameId = requestAnimationFrame(update);
 });
 
 /**
@@ -145,6 +145,8 @@ export function updateRestaurants(withReset = true) {
       addMarkersToMap();
     }
     await fillRestaurantsHTML(restaurants);
+    cancelAnimationFrame(lastFrameId);
+    lastFrameId = requestAnimationFrame(update);
   })
   .catch(error => console.error(error) )
 }
@@ -175,6 +177,8 @@ export var fillRestaurantsHTML = async (restaurants = self.restaurants) => {
   restaurants.forEach(async restaurant => {
     ul.append( renderRestaurantCard(restaurant) );
   });
+
+  lazyLoadImages();
 }
 
 /**
@@ -189,7 +193,7 @@ export var renderRestaurantCard = restaurant => {
   
   const liInner = `
   <figure>
-    <img srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" src="${src1}" alt="${restaurant.name} Restaurant" tabindex="0">
+    <img data-srcset="${src1}, ${src2}, ${src3}" class="restaurant-img" data-src="${src1}" alt="${restaurant.name} Restaurant" tabindex="0">
     <figcaption>
       <h1 tabindex="0">${restaurant.name} </h1> 
       <p tabindex="0">${restaurant.neighborhood}</p>
@@ -292,3 +296,4 @@ export var addMarkersToMap = (restaurants = self.restaurants) => {
   });
 
 }
+

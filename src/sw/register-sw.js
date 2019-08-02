@@ -3,7 +3,7 @@ import {log} from '../commonFunctions';
 const logPrefix = '[Register SW]';
  
 var registerServiceWorker = function(serviceWorkerFile) {
-  if(navigator.serviceWorker) {
+  if('serviceWorker' in navigator) {
     navigator.serviceWorker.register(serviceWorkerFile)
     .then( swRegistration => {
       log(logPrefix,"Service worker registered: %o", swRegistration);

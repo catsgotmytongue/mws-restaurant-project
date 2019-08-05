@@ -38,7 +38,7 @@ window.initMap = async function () {
      center: loc,
      scrollwheel: false
    });
-  //  updateRestaurants();
+  updateRestaurants();
   //  setNetworkIndicator();
   //  requestAnimationFrame(await update);
  }

@@ -112,10 +112,10 @@ export function lazyLoadImages() {
     threshold: 0
   };
 
-  let observer = new IntersectionObserver(function(entries, self) {
+  let observer = new IntersectionObserver( (entries, self) => {
     entries.forEach(entry => {
       if(entry.isIntersecting) {
-        preloadImage(entry.target);
+        loadImage(entry.target);
         self.unobserve(entry.target);
       }
     });
@@ -126,7 +126,7 @@ export function lazyLoadImages() {
     observer.observe(img);
   });
   
-  function preloadImage(img) {
+  function loadImage(img) {
     img.setAttribute('srcset', img.getAttribute('data-srcset'));
     img.setAttribute('src', img.getAttribute('data-src'));
   }
